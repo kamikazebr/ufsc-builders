@@ -24,7 +24,15 @@ contract Drop is Base {
     ///
     /// Collectible.sol is NOT in that number: it costs 1,248,707 gas on its own and
     /// the class never calls it, so `make deploy` skips it unless you ask.
-    uint256 constant AMOUNT = 0.05 ether;
+    /// Override in wei: AMOUNT=100000000000000000 make drop sends 0.1 each.
+    ///
+    /// Read the semantics carefully, they are not "top up to AMOUNT":
+    /// anyone whose balance is BELOW AMOUNT receives the full AMOUNT, on top
+    /// of whatever they already had. Anyone at or above it is skipped. So a
+    /// room sitting at 0.05, run again with AMOUNT=0.1, ends at 0.15 — not at
+    /// 0.1. Re-running is safe (nobody is paid twice at the same amount), but
+    /// raising the amount is additive.
+    uint256 immutable AMOUNT = vm.envOr("AMOUNT", uint256(0.05 ether));
 
     function run() external {
         // Which chain did you mean? config/networks.json says, NETWORK picks it,
