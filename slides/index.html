@@ -743,7 +743,29 @@ body.lean #lean{display:inline}
   </template>
 </section>
 
-<section class="slide" data-at="78" data-block="10 Depois" data-title="10 · Depois da aula">
+<section class="slide" data-at="75" data-block="10 Agente" data-title="10 · O agente vai junto">
+  <div class="wrap">
+    <h2>You are bringing an agent. Teach it the repo.</h2>
+    <p class="fns" style="margin-bottom:clamp(12px,1.8vh,20px)"><span class="dim">without this it suggests <span class="mono">npm install @openzeppelin/contracts</span> in a submodule repo, writes Hardhat tests, and commits your <span class="mono">.env</span></span></p>
+    <ol class="steps">
+      <li><span class="mono">CLAUDE.md</span> <span class="dim">— read automatically. Foundry not Hardhat, submodules not npm, <span class="mono">.env</span> never committed.</span></li>
+      <li><span class="mono">/hackathon-scope</span> <span class="dim">— no idea yet, or an idea far too big for 48 h</span></li>
+      <li><span class="mono">/solidity-review</span> <span class="dim">— build, test, slither, then the checklist, then a test that proves the bug</span></li>
+      <li><span class="mono">/ship-to-testnet</span> <span class="dim">— deploy, verify, and a link you can demo</span></li>
+    </ol>
+    <p class="done"><b>The point</b>A green Slither run is not a reviewed contract. This repo shipped a bug Slither never saw.</p>
+    <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://github.com/kamikazebr/ufsc-builders/blob/main/SLITHER.md" target="_blank" rel="noopener"><img class="qr" alt="QR" data-qr="https://github.com/kamikazebr/ufsc-builders/blob/main/SLITHER.md" src="data:image/png;base64,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"></a><a class="qr-cap" href="https://github.com/kamikazebr/ufsc-builders/blob/main/SLITHER.md" target="_blank" rel="noopener">SLITHER.md — o bug que a ferramenta não viu</a></div></div>
+  </div>
+  <template class="note">
+    <p><strong>Por que isso vale um slide:</strong> todos eles vão codar com agente sábado. Sem o <span class="mono">CLAUDE.md</span> o agente chuta as convenções erradas e eles perdem uma hora achando que é bug do Foundry.</p>
+    <p><strong>Conta a história do Disperse.</strong> Contrato de 15 linhas que funda a sala. O <span class="mono">_refund</span> lia <span class="mono">address(this).balance</span> — que durante o loop ainda tem o dinheiro de quem vem depois. Um endereço que fosse contrato re-entrava com lista vazia e levava o resto. <strong>Por último na lista, a transação dava sucesso e o troco sumia.</strong></p>
+    <p><strong>E o slither não viu.</strong> Os detectores de reentrância seguem escrita em storage, e o Disperse não tem storage nenhum. O bug inteiro vive na contabilidade do ETH. Achado lendo, não rodando ferramenta.</p>
+    <p>A regra que consertou não é "põe um mutex": <strong>acerte contra o que esta chamada recebeu, nunca contra um saldo compartilhado que não é teu.</strong></p>
+    <p class="say">Se sobrar tempo: os três testes em <span class="mono">test/DisperseReentrancy.t.sol</span> falham contra a versão antiga. Bug sem teste que falha não foi achado, foi imaginado.</p>
+  </template>
+</section>
+
+<section class="slide" data-at="78" data-block="11 Depois" data-title="11 · Depois da aula">
   <div class="wrap">
     <h2>Se quiser ver de novo.</h2>
     <p class="fns" style="margin-bottom:clamp(12px,1.8vh,20px)"><span class="dim">tudo em português, tudo meu:</span></p>
