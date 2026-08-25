@@ -91,6 +91,7 @@ committed. Three skills ship in `.claude/skills/` — ask for one by name:
 - **[docs/remix.md](docs/remix.md)** — Remix, and honestly when to leave it for Foundry
 - **[docs/chisel.md](docs/chisel.md)** — the Solidity REPL. Five things worth knowing, including the `abi.encodePacked` collision
 - **[docs/security.md](docs/security.md)** — Slither, the Pashov audit skill, and two deliberate bugs in this repo for you to argue about
+- **[docs/wallet.md](docs/wallet.md)** — the key that signs: exporting from Rabby, and the encrypted keystore for when you keep using this
 - **[docs/pinata.md](docs/pinata.md)** — where the NFT image actually lives, and the CID mistake everyone makes once
 - **[docs/verify.md](docs/verify.md)** — get an Etherscan key, and why an unverified contract is one nobody can attach to
 - **[docs/indexing.md](docs/indexing.md)** — subgraph vs Ponder, and the one line that decides it
@@ -120,6 +121,18 @@ All in Portuguese, all by the instructor:
 | [Subgraph, start to finish](https://www.youtube.com/watch?v=YYe5gYzmXU4) | 1h04 · schema through deploy |
 
 ## Funding a room (instructor)
+
+Sign with a keystore, not a key in a file:
+
+```
+cast wallet import ufsc --interactive     # once — asks for the key, then a password
+cast wallet address --account ufsc        # the address it holds
+ACCOUNT=ufsc SENDER=0x… make drop
+```
+
+`make wallet` lists what Foundry already has. Without `ACCOUNT`, every target
+falls back to `PRIVATE_KEY` from `.env` — fine for a testnet key that never held
+money, not fine for anything else.
 
 An empty wallet cannot call a faucet contract — calling costs gas, which is the
 thing it does not have. So the instructor pushes instead of them pulling.
