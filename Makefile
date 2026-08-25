@@ -23,6 +23,11 @@ NETWORK ?= sepolia
 ACCOUNT ?=
 SENDER  ?=
 SIGNER  := $(if $(ACCOUNT),--account $(ACCOUNT) --sender $(SENDER),--private-key $(PRIVATE_KEY))
+# ACCOUNT wins over PRIVATE_KEY, including over PRIVATE_KEY passed on the command
+# line — .env is read first and `make VAR=x` does not override it here. Setting
+# both then waits on a keystore password nobody typed, and forge reports that as
+# "unexpected end of file". So say out loud which key is signing.
+WHO     := $(if $(ACCOUNT),keystore $(ACCOUNT) → $(SENDER),PRIVATE_KEY from .env)
 DISPERSE ?= 0x0000000000000000000000000000000000000000
 RPC     ?= $(SEPOLIA_RPC_URL)
 
@@ -88,7 +93,7 @@ abi:             ## regenerate the subgraph ABI from the build — never hand-ed
 deploy:          ## deploy Token + Badge   (NETWORK=sepolia make deploy)
 	@# @-prefixed: make would otherwise echo the recipe with $(SIGNER) already
 	@# expanded, printing --private-key <the key> onto a projector.
-	@echo "forge script script/Deploy.s.sol --rpc-url $(RPC) [signer] --broadcast --verify"
+	@echo "forge script script/Deploy.s.sol --rpc-url $(RPC) [signer: $(WHO)] --broadcast --verify"
 	@NETWORK=$(NETWORK) forge script script/Deploy.s.sol \
 		--rpc-url $(RPC) $(SIGNER) --broadcast --verify
 
@@ -104,7 +109,7 @@ pin:             ## pin assets/badge.png to IPFS via Pinata, print the CID
 	@echo "put that line in .env, then: make registry"
 
 registry:        ## deploy the class registry ONCE (instructor only, needs BADGE_CID)
-	@echo "forge script script/DeployRegistry.s.sol --rpc-url $(RPC) [signer] --broadcast --verify"
+	@echo "forge script script/DeployRegistry.s.sol --rpc-url $(RPC) [signer: $(WHO)] --broadcast --verify"
 	@NETWORK=$(NETWORK) forge script script/DeployRegistry.s.sol \
 		--rpc-url $(RPC) $(SIGNER) --broadcast --verify
 
@@ -132,12 +137,12 @@ addresses:       ## pull every 0x address out of script/raw.txt, dedupe, write a
 	  fi
 
 drop:            ## fund the whole room in ONE transaction (deploys Disperse if needed)
-	@echo "forge script script/Drop.s.sol --rpc-url $(RPC) [signer] --broadcast"
+	@echo "forge script script/Drop.s.sol --rpc-url $(RPC) [signer: $(WHO)] --broadcast"
 	@DISPERSE=$(DISPERSE) NETWORK=$(NETWORK) forge script script/Drop.s.sol \
 		--rpc-url $(RPC) $(SIGNER) --broadcast
 
 fund:            ## same, but as N separate transactions — no contract needed
-	@echo "forge script script/Fund.s.sol --rpc-url $(RPC) [signer] --broadcast"
+	@echo "forge script script/Fund.s.sol --rpc-url $(RPC) [signer: $(WHO)] --broadcast"
 	@NETWORK=$(NETWORK) forge script script/Fund.s.sol \
 		--rpc-url $(RPC) $(SIGNER) --broadcast
 
