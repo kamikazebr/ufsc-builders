@@ -34,10 +34,14 @@ h1{font-family:'Archivo',sans-serif;font-weight:800;letter-spacing:-.02em;
 #src:hover{color:var(--accent);text-decoration:underline}
 #src::after{content:' · verified source';color:var(--ink-3);letter-spacing:.12em}
 body.localchain #src{display:none}
-#change{position:absolute;top:14px;right:14px;background:none;border:1px solid var(--line);
+#change{position:fixed;bottom:14px;right:14px;opacity:.45;background:none;border:1px solid var(--line);
   color:var(--ink-3);border-radius:6px;padding:4px 10px;cursor:pointer;
   font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em}
-#change:hover{color:var(--accent);border-color:var(--accent)}
+#change:hover{color:var(--accent);border-color:var(--accent);opacity:1}
+.badge-img{position:absolute;top:clamp(14px,1.6vh,20px);right:clamp(14px,1.6vh,20px);
+  width:clamp(56px,5.4vw,96px);height:auto;border-radius:10px;
+  border:1px solid var(--line);background:var(--ground-2)}
+#list li{position:relative}
 #local{display:none;font-family:'IBM Plex Mono',monospace;font-size:clamp(10px,.78vw,12px);
   letter-spacing:.12em;text-transform:uppercase;color:var(--warn);
   border:1px solid var(--warn);border-radius:999px;padding:5px 12px}
@@ -114,6 +118,10 @@ li.fresh{border-color:var(--good);background:rgba(87,201,154,.09)}
 (function () {
   "use strict";
   var SEL_ALL = '0x10c4e8b0';                 // all()
+  var SEL_IMG = '0x135d088d';                 // imageURI()
+  var BADGE_SRC = null;                       // resolved once, shared by every row
+  var lastRaw = null;                         // last all() payload, to skip repaints
+  var pendingImage = false;                   // force one repaint once the image arrives
   var setup = document.getElementById('setup');
   var listEl = document.getElementById('list');
   var statusEl = document.getElementById('status');
@@ -138,6 +146,35 @@ li.fresh{border-color:var(--good);background:rgba(87,201,154,.09)}
   var known = {};
   var first = true;
 
+  function loadBadgeImage() {
+    fetch(CFG.rpc, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 2, method: 'eth_call',
+        params: [{ to: CFG.addr, data: SEL_IMG }, 'latest']
+      })
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (j) {
+      if (j.error || !j.result || j.result.length < 130) return;
+      var data = j.result.slice(2);
+      var len = parseInt(data.substr(64, 64), 16);
+      var raw = data.substr(128, len * 2), out = '';
+      for (var i = 0; i < raw.length; i += 2) out += String.fromCharCode(parseInt(raw.substr(i, 2), 16));
+      try { out = decodeURIComponent(escape(out)); } catch (e) {}
+      // ipfs:// is what the contract stores; a browser needs a gateway.
+      // Dedicated gateway first: measured from this room, ipfs.io times out in
+      // the browser often enough to matter when it is on a projector. Public
+      // gateway is the fallback, so the board still works from any machine.
+      BADGE_SRC = out.indexOf('ipfs://') === 0
+        ? 'https://amethyst-hidden-lark-905.mypinata.cloud/ipfs/' + out.slice(7)
+        : out;
+      pendingImage = true;
+    })
+    .catch(function () { /* no picture is survivable; a broken board is not */ });
+  }
+
   function start() {
     // A local chain reuses anvil's deterministic addresses, which exist on every
     // public testnet too and belong to nobody. Linking them to an explorer sends
@@ -150,6 +187,11 @@ li.fresh{border-color:var(--good);background:rgba(87,201,154,.09)}
     src.href = CFG.exp + '/address/' + CFG.addr + '#code';
     src.textContent = CFG.addr;
     setup.style.display = 'none';
+    // Every badge shares one image, so this is a single call for the whole
+    // board. Doing it here means the picture is on the projector even when an
+    // explorer has not finished caching the token - which on a testnet is
+    // most of the time.
+    loadBadgeImage();
     poll();
     setInterval(poll, 5000);
   }
@@ -227,7 +269,13 @@ li.fresh{border-color:var(--good);background:rgba(87,201,154,.09)}
     .then(function (r) { return r.json(); })
     .then(function (j) {
       if (j.error) throw new Error(j.error.message);
-      render(decode(j.result));
+      // Repainting an unchanged list every five seconds restarts every image
+      // download and flickers on a projector. Only repaint on real change.
+      if (j.result !== lastRaw || pendingImage) {
+        lastRaw = j.result;
+        pendingImage = false;
+        render(decode(j.result));
+      }
       statusEl.textContent = 'live';
       statusEl.className = 'live';
     })
@@ -267,6 +315,8 @@ li.fresh{border-color:var(--good);background:rgba(87,201,154,.09)}
                '<code>' + a + '</code></a></span>';
       }
       li.innerHTML =
+        (BADGE_SRC ? '<img class="badge-img" src="' + BADGE_SRC + '" alt="" ' +
+          'onerror="this.onerror=null;this.src=this.src.replace(\'amethyst-hidden-lark-905.mypinata.cloud\',\'ipfs.io\')">' : '') +
         '<span class="rank">#' + (entries.length - k) + '</span>' +
         '<span class="name"></span>' +
         link('wallet', e.who, 'wal') +
