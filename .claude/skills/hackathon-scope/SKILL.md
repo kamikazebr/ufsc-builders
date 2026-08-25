@@ -129,7 +129,7 @@ Nobody starts from zero. Find the row closest to your idea:
 | --- | --- | --- |
 | Anything with a fungible balance, points with real transfer, a stablecoin-ish unit | `src/Token.sol` | ERC-20, OpenZeppelin, capped supply, owner-minted. Change name, symbol, cap. |
 | A certificate, ticket, membership, proof of attendance, receipt | `src/UFSCBuilders.sol` | ERC-721 whose `tokenURI` builds JSON on-chain with `Base64` + `Strings` — no server, no pinning per token, and the metadata can carry per-token data. |
-| An NFT whose art or metadata is a file you already have | `src/Badge.sol` + [docs/pinata.md](../../../docs/pinata.md) | `ERC721URIStorage` — `tokenURI` is just a string you set at mint. Pin the file, mint the CID. |
+| An NFT whose art or metadata is a file you already have | `src/Collectible.sol` + [docs/pinata.md](../../../docs/pinata.md) | `ERC721URIStorage` — `tokenURI` is just a string you set at mint. Pin the file, mint the CID. |
 | A registry, list, or board that others must read: who did what, who is a member, who claimed what | `src/UFSCBuilders.sol` | Struct + array + `mapping(address => uint256)`, 1-based index, insert-or-update, indexed event, custom errors. This is the shape of most registries. |
 | Paying many people at once: payroll, splits, airdrop, refunds, prize distribution | `src/Disperse.sol` | N transfers in one transaction, equal or per-address amounts, with refund of the overpay. Fifteen lines you can read. |
 | Anything that needs a list, a leaderboard, a feed, or history in a frontend | `subgraph/` | Schema, mapping and a generated ABI, ready to deploy. Use it instead of an unbounded `all()` view. [docs/indexing.md](../../../docs/indexing.md) |

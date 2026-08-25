@@ -30,12 +30,12 @@ If `make build` fails, stop. There is nothing to review yet.
 Every line looks like a bug. Most are not. The format is:
 
 ```
-Badge.mint(string) (src/Badge.sol#22-26) uses a dangerous ...
-    Reentrancy in Badge.mint(string):
+Collectible.mint(string) (src/Collectible.sol#22-26) uses a dangerous ...
+    Reentrancy in Collectible.mint(string):
         External calls:
-        - _safeMint(msg.sender,tokenId) (src/Badge.sol#25)
+        - _safeMint(msg.sender,tokenId) (src/Collectible.sol#25)
         State variables written after the call(s):
-        - nextTokenId (src/Badge.sol#23)
+        - nextTokenId (src/Collectible.sol#23)
 Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#...
 ```
 
@@ -43,7 +43,7 @@ Three things to extract: **which function**, **which line**, **what shape it
 matched**. Then decide, and write the decision down.
 
 `SLITHER.md` in this repo is the worked example. Seven findings on four
-contracts. **One was a real bug** (`Badge.mint` did `_safeMint` before
+contracts. **One was a real bug** (`Collectible.mint` did `_safeMint` before
 `_setTokenURI`, handing control to a contract recipient while the token had no
 metadata — fixed by swapping two lines). Six were justified and excluded in
 `slither.config.json`, each with a written reason.
@@ -54,7 +54,7 @@ Rules for triage:
   A `detectors_to_exclude` list with no `SLITHER.md` beside it is
   indistinguishable from someone who did not understand the finding.
 - "Slither rated it benign" is not a reason to leave code backwards. The
-  `Badge.mint` fix cost nothing.
+  `Collectible.mint` fix cost nothing.
 - Slither only tracks **storage variables**. It does not track ETH balance, so
   it will not find the bug in Pass 2's worked example. Static analysis is a
   filter for the boring 80%, not a proof of anything.
@@ -77,7 +77,7 @@ did not write, and it can call back into you.
 _safeMint(msg.sender, tokenId);
 _setTokenURI(tokenId, uri);
 
-// right — src/Badge.sol
+// right — src/Collectible.sol
 _setTokenURI(tokenId, uri);      // effect
 _safeMint(msg.sender, tokenId);  // interaction, last
 ```
@@ -145,7 +145,7 @@ function mint(address to, uint256 amount) external onlyOwner { ... }  // src/Tok
   Every time.
 - `private`/`internal` hide nothing on-chain. They only block *calls*, not
   *reads*. Anyone can read any storage slot.
-- Absent is not the same as wrong: `Badge.mint` in `src/Badge.sol` is open to
+- Absent is not the same as wrong: `Collectible.mint` in `src/Collectible.sol` is open to
   anyone **on purpose** (see `docs/security.md`). Ask what the function is for
   before you file it.
 

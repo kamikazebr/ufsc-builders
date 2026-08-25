@@ -20,14 +20,14 @@ This repo does it both ways on purpose, because the trade-off is the lesson.
 | | what is pinned | where the JSON comes from |
 |---|---|---|
 | `src/UFSCBuilders.sol` | **the image only** | built on-chain, per token, in `tokenURI` |
-| `src/Badge.sol` | image **and** a JSON per token | pinned, one file per token |
+| `src/Collectible.sol` | image **and** a JSON per token | pinned, one file per token |
 
 The registry can say *"UFSC Builder #7"* on badge number seven without anybody
 uploading thirty JSON files, because the string is assembled at call time out of
 `Strings.toString(tokenId)` and one shared `imageURI`. That is the pattern most
 real collections use: small and dynamic on-chain, big and static off-chain.
 
-`Badge.sol` takes a full URI per token instead, which is what you want when each
+`Collectible.sol` takes a full URI per token instead, which is what you want when each
 token genuinely has different art.
 
 ## Pinning the image
@@ -53,7 +53,7 @@ the same name everywhere, forever, on every node. Nothing is stored twice.
 
 ## The two-CID flow, for per-token metadata
 
-If you are doing it the `Badge.sol` way, the order matters and this is where
+If you are doing it the `Collectible.sol` way, the order matters and this is where
 people go wrong.
 
 **1. Upload the image.** Pinata gives you a CID.

@@ -22,7 +22,7 @@ contract Drop is Base {
     /// It is also one minimum claim from the pk910 faucet, so a student who
     /// burns through it can top themselves up without asking.
     ///
-    /// Badge.sol is NOT in that number: it costs 1,248,707 gas on its own and
+    /// Collectible.sol is NOT in that number: it costs 1,248,707 gas on its own and
     /// the class never calls it, so `make deploy` skips it unless you ask.
     uint256 constant AMOUNT = 0.05 ether;
 

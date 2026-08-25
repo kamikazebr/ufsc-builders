@@ -4,12 +4,20 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-/// @notice Your NFT. `tokenURI` returns a *string* — the chain has no idea
-///         what is at the other end of it, and does not care.
-contract Badge is ERC721URIStorage, Ownable {
+/// @notice One ERC-721 where every token carries its own pinned JSON — the
+///         other half of docs/pinata.md, and the opposite of UFSCBuilders,
+///         which builds its metadata on-chain from one shared image.
+///
+/// @dev Deliberately NOT called Badge. The badge is the token UFSCBuilders
+///      mints when you register, and having two things called badge cost a
+///      class fifteen minutes of confusion. This one is the demo.
+///
+/// @dev `tokenURI` returns a *string* — the chain has no idea what is at the
+///      other end of it, and does not care.
+contract Collectible is ERC721URIStorage, Ownable {
     uint256 public nextTokenId;
 
-    constructor(address owner_) ERC721("UFSC Badge", "BADGE") Ownable(owner_) {}
+    constructor(address owner_) ERC721("UFSC Collectible", "COLLECT") Ownable(owner_) {}
 
     /// @dev Anyone can mint one to themselves. That is deliberate — it is the
     ///      exercise in docs/security.md. What would you change, and why?

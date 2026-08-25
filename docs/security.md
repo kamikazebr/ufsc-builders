@@ -59,7 +59,7 @@ from Solidity down through Yul to opcodes.
 
 Both are deliberate. Neither is a trick.
 
-1. **`Badge.mint` is open to anyone.** Should it be? What is the argument for
+1. **`Collectible.mint` is open to anyone.** Should it be? What is the argument for
    leaving it open, and what breaks if you do?
 2. **`UFSCBuilders.register` never checks that `token` is a contract**, let alone
    an ERC-20. Write the check. Then ask whether it was worth the gas, and what a
