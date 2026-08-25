@@ -536,7 +536,33 @@ body.lean #lean{display:inline}
   </template>
 </section>
 
-<section class="slide" data-at="33" data-block="03 IPFS" data-title="Metadata &amp; IPFS">
+<section class="slide" data-at="32" data-block="03b Interface" data-title="3b · A interface">
+  <div class="wrap">
+    <h2>The standard is this list.</h2>
+    <div class="tbls">
+      <div>
+        <div class="tbl-h">ERC-20 — the whole thing</div>
+        <div class="code"><pre><span class="ln">interface IERC20 {</span><span class="ln">  function <b>totalSupply</b>() external view returns (uint256);</span><span class="ln">  function <b>balanceOf</b>(address) external view returns (uint256);</span><span class="ln">  function <b>transfer</b>(address to, uint256 v) external returns (bool);</span><span class="ln">  function <b>approve</b>(address spender, uint256 v) external returns (bool);</span><span class="ln">  function <b>allowance</b>(address, address) external view returns (uint256);</span><span class="ln">  function <b>transferFrom</b>(address, address, uint256) external returns (bool);</span><span class="ln"> </span><span class="ln">  event <b>Transfer</b>(address indexed, address indexed, uint256);</span><span class="ln">  event <b>Approval</b>(address indexed, address indexed, uint256);</span><span class="ln">}</span></pre></div>
+        <p class="maps">6 functions · 2 events. <b>That is all of it.</b></p>
+      </div>
+      <div>
+        <div class="tbl-h two">ERC-721 — your badge</div>
+        <div class="code"><pre><span class="ln">interface IERC721 {</span><span class="ln">  function <b>ownerOf</b>(uint256 id) external view returns (address);</span><span class="ln">  function <b>balanceOf</b>(address) external view returns (uint256);</span><span class="ln">  function <b>safeTransferFrom</b>(address, address, uint256) external;</span><span class="ln">  function <b>approve</b>(address, uint256) external;</span><span class="ln">  <span class="dim">// …and tokenURI, from the Metadata extension</span></span><span class="ln">}</span></pre></div>
+        <p class="maps"><b>No image. No name. No JSON.</b> Only <span class="mono">tokenURI</span>, which returns a string.</p>
+      </div>
+    </div>
+    <p class="fns" style="margin-top:clamp(12px,1.8vh,20px)"><span class="dim">a token is not a thing you own — it is a contract that answers these questions about you</span></p>
+  </div>
+  <template class="note">
+    <p><strong>A frase do slide:</strong> um padrão não é software que tu instala. É uma <strong>lista de assinaturas</strong> que todo mundo concordou em responder. Carteira, exchange e marketplace só sabem chamar essas seis. Qualquer contrato que responda vira "um token" pra eles.</p>
+    <p><strong>Fecha o slide anterior:</strong> a tabela era o estado, isto aqui são as portas. <span class="mono">balanceOf</span> lê a coluna da esquerda; <span class="mono">ownerOf</span> lê a coluna da direita. Mesma tabela, portas diferentes.</p>
+    <p><strong>Aponta o que NÃO está aí:</strong> não existe "imagem", "nome do dono", "preço". O ERC-721 não sabe o que é um JPEG — só devolve uma string em <span class="mono">tokenURI</span>. É por isso que o slide de metadata veio antes, e é por isso que IPFS existe nesta aula.</p>
+    <p><strong>Prepara o OpenZeppelin:</strong> seis funções parece pouco, dá pra escrever numa tarde. O próximo slide são cinco palavras de gente que escreveu e perdeu dinheiro. <span class="mono">approve</span>/<span class="mono">allowance</span> são as duas que mais mordem — pergunta pra sala pra que servem antes de explicar.</p>
+    <p class="say">Se a sala for rápida: <span class="mono">transfer</span> devolve <span class="mono">bool</span>. Metade dos tokens antigos não devolve nada, e ignorar esse retorno é o warning que o <span class="mono">forge build</span> já mostrou pra eles no slide 2. É o mesmo bug, agora com nome.</p>
+  </template>
+</section>
+
+<section class="slide" data-at="35" data-block="03 IPFS" data-title="Metadata &amp; IPFS">
   <div class="wrap">
     <h2>Where the picture lives</h2>
     <div class="hops">
@@ -558,7 +584,7 @@ body.lean #lean{display:inline}
   </template>
 </section>
 
-<section class="slide" data-at="36" data-block="04 OZ" data-title="4 · Por que OpenZeppelin">
+<section class="slide" data-at="38" data-block="04 OZ" data-title="4 · Por que OpenZeppelin">
   <div class="wrap stack">
     <h2>Why OpenZeppelin</h2>
     <ul class="words-lg">
@@ -605,9 +631,10 @@ body.lean #lean{display:inline}
         <h2>Paste your address.</h2>
         <ol class="steps">
           <li>Scan the QR → write your name and address in the first empty row</li>
-          <li>Wait ~30 seconds</li>
-          <li>Check Rabby. You have Sepolia ETH.</li>
-          <li>Now deploy: <span class="mono">Token.sol</span> → Sepolia</li>
+          <li>Wait ~30 seconds, then check Rabby. You have Sepolia ETH.</li>
+          <li>Remix → <span class="mono">Deploy &amp; Run</span> → environment <span class="mono">Injected Provider – Rabby</span></li>
+          <li>Pick <span class="mono">Token.sol</span>, fill the constructor, <span class="mono">Deploy</span>, confirm in Rabby</li>
+          <li><b>Copy your token's address</b> — Remix shows it under <span class="mono">Deployed Contracts</span>, with a copy button</li>
         </ol>
         <p class="done"><b>Done when</b>Your token exists on a live chain.</p>
         <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://docs.google.com/spreadsheets/d/1CCwQd4xYxQ8DUgzMtBVs0A-V-z8dFJgO6UoBgbki3E0/edit" target="_blank" rel="noopener"><img class="qr" alt="QR for https://docs.google.com/spreadsheets/d/1CCwQd4xYxQ8DUgzMtBVs0A-V-z8dFJgO6UoBgbki3E0/edit" data-qr="https://docs.google.com/spreadsheets/d/1CCwQd4xYxQ8DUgzMtBVs0A-V-z8dFJgO6UoBgbki3E0/edit" src="data:image/png;base64,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"></a><a class="qr-cap" href="https://docs.google.com/spreadsheets/d/1CCwQd4xYxQ8DUgzMtBVs0A-V-z8dFJgO6UoBgbki3E0/edit" target="_blank" rel="noopener">planilha da turma — cole seu endereco</a></div></div>
@@ -635,11 +662,12 @@ body.lean #lean{display:inline}
       <div>
         <h2>Put your name on the board.</h2>
         <ol class="steps">
-          <li>Copy the registry address from the screen</li>
-          <li>Remix → <span class="mono">At Address</span> → paste it</li>
-          <li>Call <span class="mono">register("your team", &lt;your token&gt;)</span></li>
-          <li>Look at the board. Then look at Rabby → NFTs.</li>
+          <li>Remix → <span class="mono">At Address</span> → paste the registry (below)</li>
+          <li>Call <span class="mono">register("your team", &lt;your token address&gt;)</span> <span class="dim">— the one you just copied</span></li>
+          <li>Confirm in Rabby. One transaction.</li>
+          <li>Watch the board at the front. Then open Rabby → <span class="mono">NFTs</span>.</li>
         </ol>
+                <p class="maps" style="margin-top:clamp(10px,1.6vh,18px)"><span class="dim">registry ·</span> <b>0xaD08C29Aa13a01Ef33533398cf8bAA9eFEeAc360</b></p>
         <p class="done"><b>Done when</b>Your row is on the screen and the badge is in your wallet.</p>
         <p class="fns" style="margin-top:clamp(10px,1.6vh,18px)"><span class="dim">terminal, if you prefer:</span> <span class="mono">cast send $UFSC_BUILDERS "register(string,address)" "your team" 0xYourToken</span></p>
       </div>
@@ -650,6 +678,7 @@ body.lean #lean{display:inline}
     </div>
   </div>
   <template class="note">
+    <p><strong>"A tela" é o telão do registro</strong> — abre <span class="mono">slides/board.html</span> num segundo monitor ANTES de começar este bloco, e deixa ligado. Ele já abre apontando pro contrato certo, não precisa configurar nada.</p>
     <p><strong>Este é o momento da aula.</strong> Não corre. Uma chamada e três coisas acontecem de uma vez: a linha aparece no telão, o NFT cai na carteira, e o subgraph passa a ter o que indexar. É o pagamento de tudo que veio antes.</p>
     <p><strong>Uma transação, não duas.</strong> <span class="mono">register</span> escreve a linha E minta o badge. Mostra isso: não existe "e agora minta o NFT" — o mint está dentro do mesmo <span class="mono">_mint</span>, na primeira vez. Chamar de novo só atualiza a linha, não minta outro.</p>
     <p><strong>tokenId = número da linha.</strong> Pergunta quem foi o #1 e quem é o último. O número não é sorteio nem sequência aleatória — é a posição no array. Isso fecha a tabela do slide 3.</p>
