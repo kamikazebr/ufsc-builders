@@ -619,7 +619,7 @@ body.lean #lean{display:inline}
     <h2><span class="i18n" lang="en">The standard is this list.</span><span class="i18n" lang="pt">O padrão é esta lista.</span></h2>
     <div class="tbls">
       <div>
-        <div class="tbl-h"><span class="i18n" lang="en">ERC-20 — the whole thing</span><span class="i18n" lang="pt">ERC-20 — é isso tudo</span></div>
+        <div class="tbl-h"><a href="https://eips.ethereum.org/EIPS/eip-20" target="_blank" rel="noopener"><span class="i18n" lang="en">ERC-20 — the whole thing</span><span class="i18n" lang="pt">ERC-20 — é isso tudo</span> <span class="dim">· EIP-20</span></a></div>
         <div class="code narrow"><pre>interface IERC20 {
   function totalSupply() external view returns (uint256);
   function balanceOf(address) external view returns (uint256);
@@ -634,7 +634,7 @@ body.lean #lean{display:inline}
         <p class="maps"><span class="i18n" lang="en">6 functions · 2 events. <b>That is all of it.</b></span><span class="i18n" lang="pt">6 funções · 2 eventos. <b>É isso tudo.</b></span></p>
       </div>
       <div>
-        <div class="tbl-h two"><span class="i18n" lang="en">ERC-721 — your badge</span><span class="i18n" lang="pt">ERC-721 — o teu badge</span></div>
+        <div class="tbl-h two"><a href="https://eips.ethereum.org/EIPS/eip-721" target="_blank" rel="noopener"><span class="i18n" lang="en">ERC-721 — your badge</span><span class="i18n" lang="pt">ERC-721 — o teu badge</span> <span class="dim">· EIP-721</span></a></div>
         <div class="code narrow"><pre>interface IERC721 {
   function ownerOf(uint256 id) external view returns (address);
   function balanceOf(address) external view returns (uint256);
@@ -645,9 +645,13 @@ body.lean #lean{display:inline}
         <p class="maps"><span class="i18n" lang="en"><b>No image. No name. No JSON.</b> Only <span class="mono">tokenURI</span>, which returns a string.</span><span class="i18n" lang="pt"><b>Sem imagem. Sem nome. Sem JSON.</b> Só <span class="mono">tokenURI</span>, que devolve uma string.</span></p>
       </div>
     </div>
-    <p class="fns" style="margin-top:clamp(12px,1.8vh,20px)"><span class="i18n" lang="en"><span class="dim">a token is not a thing you own — it is a contract that answers these questions about you</span></span><span class="i18n" lang="pt"><span class="dim">um token não é uma coisa que tu tem — é um contrato que responde estas perguntas sobre ti</span></span></p>
+    <p class="fns" style="margin-top:clamp(10px,1.5vh,16px)"><span class="dim"><span class="i18n" lang="en">every standard is a numbered document:</span><span class="i18n" lang="pt">todo padrão é um documento numerado:</span></span> <a href="https://eips.ethereum.org/" target="_blank" rel="noopener">eips.ethereum.org</a> <span class="dim">·</span> <a href="https://ethereum-magicians.org/" target="_blank" rel="noopener">ethereum-magicians.org</a> <span class="dim"><span class="i18n" lang="en"> — where the next ones get argued about</span><span class="i18n" lang="pt"> — onde os próximos são discutidos</span></span></p>
+        <p class="fns" style="margin-top:clamp(12px,1.8vh,20px)"><span class="i18n" lang="en"><span class="dim">a token is not a thing you own — it is a contract that answers these questions about you</span></span><span class="i18n" lang="pt"><span class="dim">um token não é uma coisa que tu tem — é um contrato que responde estas perguntas sobre ti</span></span></p>
   </div>
   <template class="note">
+    <p><strong>Os dois cabeçalhos são links pro EIP.</strong> Abre o <span class="mono">eip-20</span> ao vivo e mostra que a "especificação" cabe numa página — a mesma lista de seis funções, escrita em 2015 e nunca mudada. É o argumento de que padrão não é framework: é acordo.</p>
+    <p><strong>eips.ethereum.org e ethereum-magicians.org</strong> são pro dia 29. Ideia de hackathon boa costuma sair de um EIP em <span class="mono">Draft</span> ou de uma discussão em aberto no fórum — coisa que ninguém implementou ainda.</p>
+
     <p><strong>A frase do slide:</strong> um padrão não é software que tu instala. É uma <strong>lista de assinaturas</strong> que todo mundo concordou em responder. Carteira, exchange e marketplace só sabem chamar essas seis. Qualquer contrato que responda vira "um token" pra eles.</p>
     <p><strong>Fecha o slide anterior:</strong> a tabela era o estado, isto aqui são as portas. <span class="mono">balanceOf</span> lê a coluna da esquerda; <span class="mono">ownerOf</span> lê a coluna da direita. Mesma tabela, portas diferentes.</p>
     <p><strong>Aponta o que NÃO está aí:</strong> não existe "imagem", "nome do dono", "preço". O ERC-721 não sabe o que é um JPEG — só devolve uma string em <span class="mono">tokenURI</span>. É por isso que o slide de metadata veio antes, e é por isso que IPFS existe nesta aula.</p>
