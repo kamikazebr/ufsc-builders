@@ -4,7 +4,7 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy ufsc-builders --node https://api.studio.thegraph.com/deploy/",
+    "deploy": "graph deploy ufscbuilder --node https://api.studio.thegraph.com/deploy/",
     "auth": "graph auth"
   },
   "devDependencies": {

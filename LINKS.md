@@ -60,6 +60,13 @@ Slow for a room of thirty. Fine for one person on a Saturday.
 
 | | |
 |---|---|
+### The class subgraph
+
+| | |
+|---|---|
+| [playground](https://api.studio.thegraph.com/query/1758157/ufscbuilder/v0.0.1/graphql) | public GraphiQL, no login — query the registry live |
+| `https://api.studio.thegraph.com/query/1758157/ufscbuilder/v0.0.1` | the endpoint itself, if you are calling it from code |
+
 | [iancoleman.io/bip39](https://iancoleman.io/bip39/) | seed phrase → private key → address, every step visible. Run it offline with a throwaway seed — a site that turns a seed into keys is exactly the site you never paste a real seed into. |
 
 
