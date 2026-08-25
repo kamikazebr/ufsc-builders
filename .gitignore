@@ -5,3 +5,23 @@ broadcast/
 node_modules/
 subgraph/generated/
 subgraph/build/
+
+# variantes de .env
+.env.*
+!.env.example
+
+# dados coletados de alunos — nunca versionar
+script/raw.txt
+script/addresses.txt
+
+# lixo de SO / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# logs, coverage, saída do slither
+*.log
+lcov.info
+coverage/
+crytic-export/

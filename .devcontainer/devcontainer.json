@@ -1,0 +1,29 @@
+{
+  "name": "UFSC Builders",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "22" },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/python:1": { "version": "3.12" }
+  },
+
+  "postCreateCommand": ".devcontainer/setup.sh",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "NomicFoundation.hardhat-solidity",
+        "tamasfe.even-better-toml",
+        "GraphQL.vscode-graphql"
+      ],
+      "settings": {
+        "solidity.packageDefaultDependenciesContractsDirectory": "src",
+        "solidity.packageDefaultDependenciesDirectory": "lib"
+      }
+    }
+  },
+
+  "runArgs": ["--security-opt=no-new-privileges:true"],
+  "remoteUser": "vscode"
+}

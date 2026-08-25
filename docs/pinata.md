@@ -13,34 +13,67 @@ A badge image is a few hundred KB. You are nowhere near the limit.
 
 <https://pinata.cloud> → sign up → **Files**.
 
-## Two uploads, in this order
+## Two contracts here, two different answers
 
-This is where people go wrong, so read the order carefully.
+This repo does it both ways on purpose, because the trade-off is the lesson.
 
-### 1. Upload the image
+| | what is pinned | where the JSON comes from |
+|---|---|---|
+| `src/UFSCBuilders.sol` | **the image only** | built on-chain, per token, in `tokenURI` |
+| `src/Badge.sol` | image **and** a JSON per token | pinned, one file per token |
 
-Drag it into Files. Pinata gives you a CID:
+The registry can say *"UFSC Builder #7"* on badge number seven without anybody
+uploading thirty JSON files, because the string is assembled at call time out of
+`Strings.toString(tokenId)` and one shared `imageURI`. That is the pattern most
+real collections use: small and dynamic on-chain, big and static off-chain.
+
+`Badge.sol` takes a full URI per token instead, which is what you want when each
+token genuinely has different art.
+
+## Pinning the image
+
+The badge is already pinned. It is in `.env.example`:
 
 ```
-bafybeigd...q4  ← the IMAGE cid
+BADGE_CID=bafkreigpgwxwpaaocq5ut3g2sfaeadhqpei2r5nmlnbijcpr4uehppdl54
 ```
 
-### 2. Write the metadata JSON, with that CID inside it
+To pin your own — put `PINATA_JWT` in `.env`
+(<https://app.pinata.cloud/developers/api-keys>, upload scope is enough), then:
+
+```
+make pin
+```
+
+It prints a `BADGE_CID=` line. Paste it into `.env` and run `make registry`.
+
+Re-run `make pin` on an unchanged file and **you get the identical CID back**.
+That is not caching. The CID *is* a hash of the bytes, so the same bytes have
+the same name everywhere, forever, on every node. Nothing is stored twice.
+
+## The two-CID flow, for per-token metadata
+
+If you are doing it the `Badge.sol` way, the order matters and this is where
+people go wrong.
+
+**1. Upload the image.** Pinata gives you a CID.
+
+**2. Write the metadata JSON with that CID inside it:**
 
 ```json
 {
   "name": "UFSC Badge #0",
   "description": "Ethereum Builders Tour, Florianópolis",
-  "image": "ipfs://bafybeigd...q4",
+  "image": "ipfs://bafkreigpgwxwpaaocq5ut3g2sfaeadhqpei2r5nmlnbijcpr4uehppdl54",
   "attributes": [
     { "trait_type": "Cohort", "value": "2026" }
   ]
 }
 ```
 
-Save it as `metadata.json` and upload **that** too. You get a second CID.
+Upload **that** too. You get a second CID.
 
-### 3. Mint with the JSON's CID — not the image's
+**3. Mint with the JSON's CID — not the image's:**
 
 ```solidity
 mint("ipfs://<THE JSON CID>")
@@ -50,7 +83,7 @@ mint("ipfs://<THE JSON CID>")
 > PNG where its metadata should be, every marketplace fails to parse it, and it
 > shows up as broken with no error message anywhere.
 
-## Your gateway
+## Gateways
 
 `ipfs://` is not a URL a browser understands. Something has to resolve it.
 
@@ -60,8 +93,43 @@ Pinata gives you one dedicated gateway on the free plan:
 https://<your-subdomain>.mypinata.cloud/ipfs/<CID>
 ```
 
-Use that, not `ipfs.io`. The public gateway is shared by the whole internet and
-gets slow exactly when thirty people hit it at once.
+Yours is faster and is not shared with the whole internet, so use it for your
+own frontend. But **do not put a gateway URL in `tokenURI`** — put `ipfs://`.
+Wallets and marketplaces resolve it through a gateway of their own choosing, and
+a hardcoded gateway URL is a link that rots the day that company changes its
+mind.
+
+Measured on the badge above, 66 KB:
+
+| gateway | |
+|---|---|
+| `amethyst-hidden-lark-905.mypinata.cloud` | 200, 1.2 s |
+| `ipfs.io` | 200, 1.5 s |
+| `dweb.link` | 301 to the subdomain form — normal, follow it |
+| `cloudflare-ipfs.com` | dead. Cloudflare shut its gateway down; anything telling you to use it is out of date |
+
+Worth doing yourself before class: fetch your CID from a gateway that is *not*
+the one you uploaded through. If it only resolves on your own gateway, it is not
+really on the network yet.
+
+## Doing it from the terminal
+
+Pinata ships an MCP server, so an agent can pin a file and hand back the CID
+without anyone opening the dashboard: <https://docs.pinata.cloud/tools/mcp/overview>
+
+```
+claude mcp add pinata -s user \
+  -e PINATA_JWT=... -e GATEWAY_URL=<sub>.mypinata.cloud \
+  -- npx pinata-mcp /path/to/assets
+```
+
+Two notes. The last argument is an **allowed directory** — the server cannot
+read anything outside it, so point it at `assets/`, not at your home folder.
+And `npx` re-downloads the package on every run; installing it pinned
+(`npm i --ignore-scripts --save-exact pinata-mcp@0.2.0`) and pointing the
+command at the local binary is the safer habit.
+
+`make pin` above does the same job with `curl` and no dependencies at all.
 
 ## What pinning does and does not buy you
 

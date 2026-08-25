@@ -3,8 +3,8 @@ type Builder @entity(immutable: false) {
   id: Bytes!
   name: String!
   token: Bytes!
-  "zero until they finish BUILD 2"
-  badge: Bytes
+  "the NFT you were minted — its id is your row number"
+  badgeId: BigInt!
   firstSeen: BigInt!
   updatedAt: BigInt!
   "how many times they changed their entry"

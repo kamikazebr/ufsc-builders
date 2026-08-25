@@ -13,7 +13,7 @@ import "forge-std/Script.sol";
 /// 3. forge script script/Fund.s.sol --rpc-url $SEPOLIA_RPC_URL \
 ///      --private-key $PRIVATE_KEY --broadcast
 contract Fund is Script {
-    uint256 constant AMOUNT = 0.01 ether; // plenty for two deploys + calls
+    uint256 constant AMOUNT = 0.05 ether; // plenty for two deploys + calls
 
     function run() external {
         string memory raw = vm.readFile("script/addresses.txt");

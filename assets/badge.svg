@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#10151D"/>
+      <stop offset="1" stop-color="#0B0E13"/>
+    </linearGradient>
+    <linearGradient id="a" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#5B9CF8"/>
+      <stop offset="1" stop-color="#C792EA"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1000" height="1000" fill="url(#g)"/>
+
+  <!-- storage slots: 32 bytes, the shape everything in the session sits on -->
+  <g opacity="0.16">
+    <g fill="#5B9CF8">
+      <rect x="120" y="628" width="34" height="34" rx="4"/>
+      <rect x="164" y="628" width="34" height="34" rx="4"/>
+      <rect x="208" y="628" width="34" height="34" rx="4"/>
+      <rect x="252" y="628" width="34" height="34" rx="4"/>
+      <rect x="296" y="628" width="34" height="34" rx="4"/>
+      <rect x="340" y="628" width="34" height="34" rx="4"/>
+      <rect x="384" y="628" width="34" height="34" rx="4"/>
+      <rect x="428" y="628" width="34" height="34" rx="4"/>
+      <rect x="472" y="628" width="34" height="34" rx="4"/>
+      <rect x="516" y="628" width="34" height="34" rx="4"/>
+      <rect x="560" y="628" width="34" height="34" rx="4"/>
+      <rect x="604" y="628" width="34" height="34" rx="4"/>
+      <rect x="648" y="628" width="34" height="34" rx="4"/>
+      <rect x="692" y="628" width="34" height="34" rx="4"/>
+      <rect x="736" y="628" width="34" height="34" rx="4"/>
+    </g>
+    <rect x="780" y="628" width="34" height="34" rx="4" fill="#C792EA"/>
+  </g>
+
+  <text x="120" y="250" font-family="'IBM Plex Mono',monospace" font-size="30"
+        letter-spacing="9" fill="#616D80">ETHEREUM BUILDERS TOUR</text>
+
+  <text x="120" y="430" font-family="Archivo,'Helvetica Neue',Arial,sans-serif"
+        font-size="150" font-weight="800" letter-spacing="-6" fill="#E9EDF4">UFSC</text>
+  <text x="120" y="570" font-family="Archivo,'Helvetica Neue',Arial,sans-serif"
+        font-size="136" font-weight="800" letter-spacing="-5" fill="url(#a)">BUILDERS</text>
+
+  <text x="120" y="790" font-family="'IBM Plex Mono',monospace" font-size="34"
+        fill="#9AA5B8">florianópolis</text>
+  <text x="120" y="846" font-family="'IBM Plex Mono',monospace" font-size="34"
+        fill="#9AA5B8">25.08.2026</text>
+
+  <text x="880" y="846" font-family="'IBM Plex Mono',monospace" font-size="34"
+        fill="#5B9CF8" text-anchor="end">sepolia</text>
+
+  <rect x="40" y="40" width="920" height="920" rx="28" fill="none"
+        stroke="#242D3B" stroke-width="3"/>
+</svg>

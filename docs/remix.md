@@ -42,3 +42,29 @@ the thing holds value, because that is when you need tests you can re-run.
 
 They are not rivals. Most people who use Foundry every day still open Remix to
 inspect somebody else's contract.
+
+## A third option: don't install anything, and still get Foundry
+
+This repo ships a **devcontainer**. Two ways in:
+
+**In your browser** — on GitHub: `Code` → `Codespaces` → *Create codespace*.
+You get Foundry, node, pnpm, graph-cli and slither in a VS Code tab. Nothing
+touches your laptop. The free tier is 60 core-hours a month, which is far more
+than a hackathon weekend.
+
+**Locally** — with Docker Desktop running, open the folder in VS Code and accept
+*Reopen in Container*.
+
+Either way `.devcontainer/setup.sh` installs the toolchain, pulls the
+dependencies, builds, and copies `.env.example` to `.env` for you.
+
+### So which one
+
+| | |
+| --- | --- |
+| **Remix** | Poking at a deployed contract. Your first deploy. A locked-down laptop. Zero setup, zero account. |
+| **Codespaces** | You want the real toolchain and do not want to install it. Needs a GitHub account. |
+| **Local Foundry** | You are going to live in this. Fastest, and it works on a plane. |
+
+For the session: Remix. For the hackathon: whichever of the other two you have
+already got working — decide that *before* Saturday, not at 2am on Sunday.

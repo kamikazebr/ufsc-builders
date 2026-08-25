@@ -18,8 +18,6 @@ dataSources:
         - name: UFSCBuilders
           file: ./abis/UFSCBuilders.json
       eventHandlers:
-        - event: Registered(indexed address,string,address)
+        - event: Registered(indexed address,indexed uint256,string,address)
           handler: handleRegistered
-        - event: BadgeSet(indexed address,address)
-          handler: handleBadgeSet
       file: ./src/mapping.ts

@@ -1,0 +1,976 @@
+<meta charset="utf-8">
+<title>Solidity &amp; Token Standards</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+/* ---------------------------------------------------------------
+   Deliberately single-theme. A lecture deck is projected in a dark
+   room; it must not follow the viewer's OS into a white blast.
+   Every colour is painted explicitly so it holds on any host ground.
+   --------------------------------------------------------------- */
+:root{
+  --ground:#0B0E13;
+  --ground-2:#10151D;
+  --surface:#161C26;
+  --line:#242D3B;
+  --ink:#E9EDF4;
+  --ink-2:#9AA5B8;
+  --ink-3:#616D80;
+  --accent:#5B9CF8;
+  --accent-soft:rgba(91,156,248,.14);
+  --warn:#F2A33C;
+  --warn-soft:rgba(242,163,60,.13);
+  --good:#57C99A;
+  --bad:#E56A5A;
+
+  --f-display:'Archivo','Helvetica Neue',Arial,sans-serif;
+  --f-body:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+  --f-mono:'IBM Plex Mono','SFMono-Regular',Menlo,Consolas,monospace;
+
+  --pad:clamp(28px,4.4vw,84px);
+  --rail:clamp(46px,4.6vw,74px);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--f-body);
+  font-size:clamp(15px,1.05vw,19px);
+  line-height:1.5;
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- rails ---------- */
+.rail{
+  position:fixed;top:0;bottom:0;left:0;width:var(--rail);
+  border-right:1px solid var(--line);
+  background:var(--ground-2);
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:space-between;padding:18px 0;z-index:40;
+}
+.rail-mark{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;
+  color:var(--ink-3);writing-mode:vertical-rl;text-orientation:mixed;
+}
+.rail-prog{
+  flex:1;width:2px;margin:16px 0;background:var(--line);
+  border-radius:2px;position:relative;overflow:hidden;
+}
+.rail-prog i{
+  position:absolute;left:0;top:0;width:100%;height:0%;
+  background:var(--accent);transition:height .3s ease;
+}
+
+/* ---------- slides ---------- */
+.deck{position:fixed;inset:0 0 0 var(--rail)}
+.slide{
+  position:absolute;inset:0;
+  padding:var(--pad) var(--pad) calc(var(--pad) * .8);
+  display:flex;flex-direction:column;justify-content:center;
+  opacity:0;pointer-events:none;
+  transform:translateY(10px);
+  transition:opacity .26s ease,transform .26s ease;
+  overflow:auto;
+}
+.slide.is-on{opacity:1;pointer-events:auto;transform:none}
+.wrap{width:100%;max-width:1180px;margin:0 auto}
+
+/* ---------- type ---------- */
+.eyebrow{
+  font-family:var(--f-mono);font-size:clamp(11px,.86vw,14px);
+  letter-spacing:.2em;text-transform:uppercase;color:var(--accent);
+  margin-bottom:clamp(14px,1.8vh,26px);display:flex;gap:12px;align-items:center;
+}
+.eyebrow.warn{color:var(--warn)}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+h1{
+  font-family:var(--f-display);font-weight:800;
+  font-size:clamp(2.3rem,5.4vw,5rem);line-height:1.02;
+  letter-spacing:-.025em;margin:0;text-wrap:balance;
+}
+h2{
+  font-family:var(--f-display);font-weight:700;
+  font-size:clamp(1.7rem,3.5vw,3.1rem);line-height:1.08;
+  letter-spacing:-.02em;margin:0 0 clamp(16px,2.4vh,30px);text-wrap:balance;
+}
+.sub{
+  font-size:clamp(1rem,1.5vw,1.5rem);color:var(--ink-2);
+  margin:clamp(16px,2.2vh,28px) 0 0;max-width:60ch;text-wrap:balance;
+}
+.big{
+  font-family:var(--f-display);font-weight:700;
+  font-size:clamp(1.9rem,4.3vw,3.9rem);line-height:1.12;
+  letter-spacing:-.022em;margin:0;text-wrap:balance;
+}
+.big em{font-style:normal;color:var(--accent)}
+.big u{text-decoration:none;color:var(--warn)}
+p{margin:0 0 1em;max-width:66ch}
+p:last-child{margin-bottom:0}
+strong{font-weight:600;color:#fff}
+.dim{color:var(--ink-2)}
+.mono{font-family:var(--f-mono)}
+
+/* ---------- lists ---------- */
+ul.points{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:clamp(10px,1.6vh,20px)}
+ul.points li{
+  display:flex;gap:16px;align-items:flex-start;
+  font-size:clamp(.95rem,1.32vw,1.32rem);line-height:1.45;max-width:74ch;
+}
+ul.points li .k{
+  font-family:var(--f-mono);font-size:.72em;color:var(--accent);
+  padding-top:.42em;flex:none;letter-spacing:.06em;
+}
+ul.points.warn li .k{color:var(--warn)}
+
+/* ---------- code ---------- */
+.code{
+  background:var(--ground-2);border:1px solid var(--line);border-radius:10px;
+  overflow:auto;font-family:var(--f-mono);
+  font-size:clamp(.78rem,1.06vw,1.08rem);line-height:1.62;
+}
+.code pre{margin:0;padding:clamp(14px,1.8vh,22px) 0}
+.code .ln{display:block;padding:0 clamp(16px,2vw,26px);white-space:pre;position:relative}
+.code .ln.mark{background:var(--warn-soft);box-shadow:inset 3px 0 0 var(--warn)}
+.code .ln.good{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
+.code .n{
+  display:inline-block;width:2.2em;color:var(--ink-3);
+  user-select:none;font-size:.85em;
+}
+.t-key{color:#C792EA}
+.t-typ{color:#7FD1E8}
+.t-str{color:#A5D6A7}
+.t-num{color:#F2A33C}
+.t-com{color:var(--ink-3);font-style:italic}
+.t-fn{color:#8AB4F8}
+
+.cap{
+  font-family:var(--f-mono);font-size:clamp(.72rem,.92vw,.92rem);
+  color:var(--ink-3);margin-top:12px;letter-spacing:.02em;
+}
+
+/* ---------- layout helpers ---------- */
+.split{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(20px,2.6vw,44px);align-items:start}
+.split.even{grid-template-columns:1fr 1fr}
+@media (max-width:900px){.split,.split.even{grid-template-columns:1fr}}
+.stack{display:flex;flex-direction:column;gap:clamp(14px,2vh,24px)}
+
+table.grid{border-collapse:collapse;width:100%;font-size:clamp(.88rem,1.2vw,1.2rem)}
+table.grid th,table.grid td{
+  text-align:left;padding:clamp(10px,1.5vh,16px) 14px;border-bottom:1px solid var(--line);
+}
+table.grid th{
+  font-family:var(--f-mono);font-size:.76em;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3);font-weight:500;
+}
+table.grid td.mono{font-family:var(--f-mono);color:var(--accent)}
+
+.chk{list-style:none;margin:0;padding:0;
+  display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,1.2vh,14px) clamp(20px,2.4vw,40px)}
+@media (max-width:900px){.chk{grid-template-columns:1fr}}
+.chk li{display:flex;gap:12px;align-items:flex-start;font-size:clamp(.86rem,1.15vw,1.14rem);line-height:1.4}
+.chk li::before{
+  content:"";flex:none;width:1em;height:1em;margin-top:.22em;
+  border:1.5px solid var(--ink-3);border-radius:3px;
+}
+
+.hexbox{
+  font-family:var(--f-mono);background:var(--ground-2);
+  border:1px solid var(--line);border-radius:10px;
+  padding:clamp(16px,2.4vh,28px);word-break:break-all;
+  font-size:clamp(.8rem,1.35vw,1.35rem);line-height:1.6;color:var(--ink-2);
+}
+.hexbox b{color:var(--warn);font-weight:600}
+
+.tagrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:clamp(16px,2.2vh,26px)}
+.tag{
+  font-family:var(--f-mono);font-size:clamp(.7rem,.9vw,.9rem);
+  letter-spacing:.08em;text-transform:uppercase;
+  border:1px solid var(--line);border-radius:999px;
+  padding:7px 14px;color:var(--ink-2);
+}
+.tag.on{border-color:var(--accent);color:var(--accent)}
+
+/* ---------- chrome ---------- */
+.hud{
+  position:fixed;right:clamp(16px,2vw,30px);bottom:clamp(12px,1.6vh,22px);
+  display:flex;gap:clamp(12px,1.6vw,22px);align-items:baseline;
+  font-family:var(--f-mono);font-size:clamp(11px,.86vw,14px);
+  color:var(--ink-3);z-index:40;letter-spacing:.08em;
+  font-variant-numeric:tabular-nums;
+}
+.hud .cur{color:var(--ink)}
+#clock{color:var(--ink-3);cursor:pointer;user-select:none;padding:4px 8px;margin:-4px -8px;border-radius:6px}
+#clock:hover{background:var(--surface)}
+#clockreset{cursor:pointer;user-select:none;color:var(--ink-3);padding:4px 6px;margin:-4px -2px;border-radius:6px}
+#clockreset:hover{background:var(--surface);color:var(--ink-2)}
+#clock.run{color:var(--good)}
+#clock.late{color:var(--warn)}
+#clock.off{opacity:.45}
+
+.overlay{
+  position:fixed;inset:0;background:rgba(8,10,14,.97);z-index:60;
+  display:none;padding:clamp(28px,4vw,64px);overflow:auto;
+}
+.overlay.on{display:block}
+.ov-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+  gap:12px;max-width:1400px;margin:0 auto;
+}
+.ov-card{
+  text-align:left;background:var(--surface);border:1px solid var(--line);
+  border-radius:8px;padding:14px;color:var(--ink-2);cursor:pointer;
+  font-family:var(--f-body);font-size:.92rem;line-height:1.35;
+}
+.ov-card:hover,.ov-card:focus-visible{border-color:var(--accent);color:var(--ink)}
+.ov-card b{display:block;font-family:var(--f-mono);font-size:.7rem;
+  letter-spacing:.14em;color:var(--ink-3);margin-bottom:6px}
+.ov-card.here{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+
+.notes{
+  position:fixed;left:var(--rail);right:0;bottom:0;z-index:50;
+  background:var(--surface);border-top:1px solid var(--line);
+  padding:clamp(14px,2vh,22px) clamp(20px,3vw,44px) clamp(30px,3.4vh,40px);
+  max-height:44vh;overflow:auto;display:none;
+}
+.notes.on{display:block}
+#notesbtn{position:fixed;left:calc(var(--rail) + 14px);bottom:14px;z-index:55;
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  background:var(--surface);color:var(--ink-3);border:1px solid var(--line);
+  border-radius:999px;padding:8px 16px;cursor:pointer}
+#notesbtn:hover,#notesbtn:focus-visible{color:var(--ink);border-color:var(--ink-3)}
+body.notesopen #notesbtn{color:var(--accent);border-color:var(--accent)}
+.notes h4{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--accent);margin:0 0 10px;
+}
+.notes p{font-size:clamp(.86rem,1.05vw,1.02rem);color:var(--ink-2);max-width:88ch}
+.notes .say{color:var(--ink);border-left:2px solid var(--accent);padding-left:14px}
+
+kbd{
+  font-family:var(--f-mono);font-size:.86em;background:var(--ground-2);
+  border:1px solid var(--line);border-radius:4px;padding:2px 7px;color:var(--ink);
+}
+.keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+  gap:14px;max-width:900px;margin:26px auto 0;color:var(--ink-2)}
+
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(91,156,248,.35)}
+a:hover{border-bottom-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+button{font:inherit}
+
+
+/* ---------- quiz ---------- */
+.qnum{font-family:var(--f-mono);font-size:clamp(11px,.86vw,14px);letter-spacing:.2em;
+  text-transform:uppercase;color:var(--accent);margin-bottom:clamp(10px,1.4vh,18px)}
+.qtext{font-family:var(--f-display);font-weight:700;
+  font-size:clamp(1.5rem,3.1vw,2.7rem);line-height:1.12;letter-spacing:-.02em;
+  margin:0 0 clamp(20px,3vh,40px);text-wrap:balance;max-width:30ch}
+.opts{list-style:none;margin:0;padding:0;display:grid;
+  grid-template-columns:1fr 1fr;gap:clamp(10px,1.5vh,18px)}
+@media (max-width:900px){.opts{grid-template-columns:1fr}}
+.opts li{display:flex;gap:14px;align-items:flex-start;
+  border:1px solid var(--line);border-radius:10px;
+  padding:clamp(12px,1.8vh,20px) clamp(14px,1.6vw,22px);
+  font-size:clamp(.9rem,1.25vw,1.25rem);line-height:1.4;
+  background:var(--ground-2);transition:border-color .2s,background .2s,opacity .2s}
+.opts li .l{font-family:var(--f-mono);color:var(--ink-3);flex:none;font-weight:500}
+.slide.revealed .opts li{opacity:.38}
+.slide.revealed .opts li[data-correct]{opacity:1;border-color:var(--good);
+  background:rgba(87,201,154,.1)}
+.slide.revealed .opts li[data-correct] .l{color:var(--good)}
+.why{margin-top:clamp(16px,2.4vh,28px);color:var(--ink-2);
+  font-size:clamp(.88rem,1.15vw,1.12rem);max-width:74ch;
+  opacity:0;transition:opacity .25s}
+.slide.revealed .why{opacity:1}
+.why b{color:var(--good);font-weight:600}
+.hint{font-family:var(--f-mono);font-size:clamp(10px,.8vw,12px);letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-3);margin-top:clamp(14px,2vh,22px)}
+.slide.revealed .hint{visibility:hidden}
+.ov-card.opt b{color:var(--warn)}
+.words-lg{display:flex;flex-wrap:wrap;gap:clamp(10px,1.4vw,18px);list-style:none;margin:0;padding:0}
+/* ---------- the two tables ---------- */
+.tbls{display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,3vw,52px);align-items:start}
+@media (max-width:900px){.tbls{grid-template-columns:1fr}}
+.tbl-h{font-family:var(--f-mono);font-size:clamp(10px,.82vw,13px);letter-spacing:.18em;
+  text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.tbl-h.two{color:#C792EA}
+table.demo{border-collapse:collapse;width:100%;font-family:var(--f-mono);
+  font-size:clamp(.82rem,1.15vw,1.2rem)}
+table.demo th{text-align:left;font-weight:500;color:var(--ink-3);
+  font-size:.8em;letter-spacing:.1em;text-transform:uppercase;
+  padding:0 14px 8px 0;border-bottom:1px solid var(--line)}
+table.demo td{padding:clamp(5px,.9vh,9px) 14px clamp(5px,.9vh,9px) 0;
+  border-bottom:1px solid rgba(36,45,59,.5);color:var(--ink)}
+table.demo td.num{text-align:right;font-variant-numeric:tabular-nums;color:var(--accent)}
+table.demo tr.sum td{border-bottom:0;border-top:1px solid var(--line);
+  color:var(--ink-2);padding-top:12px}
+table.demo tr.sum td.num{color:#fff;font-weight:500}
+table.demo td.meta{color:var(--ink-3)}
+/* The name is a label for humans. The address is what the mapping is keyed on.
+   Showing both, with the address visually secondary, makes that readable. */
+table.demo td .who{color:var(--ink)}
+table.demo td .adr{color:var(--ink-3);font-size:.86em}
+.maps{font-family:var(--f-mono);font-size:clamp(.8rem,1.08vw,1.12rem);
+  color:var(--ink-2);margin-top:16px}
+.maps b{color:var(--accent);font-weight:500}
+
+/* ---------- the metadata chain ---------- */
+.hops{display:flex;flex-direction:column;gap:0;align-items:flex-start;
+  margin-top:clamp(14px,2vh,26px)}
+.hop{border:1px solid var(--line);border-radius:10px;background:var(--ground-2);
+  padding:clamp(12px,1.7vh,20px) clamp(16px,1.8vw,26px);
+  font-family:var(--f-mono);font-size:clamp(.82rem,1.15vw,1.22rem);
+  line-height:1.55;max-width:100%;overflow-x:auto}
+.hop .k{color:var(--ink-3)}
+.hop .v{color:var(--accent)}
+.hop.j .v{color:#A5D6A7}
+.hop.img{color:#C792EA}
+.arrow{font-family:var(--f-mono);color:var(--ink-3);
+  font-size:clamp(.9rem,1.3vw,1.3rem);padding:6px 0 6px 26px;line-height:1}
+.arrow b{color:var(--warn);font-weight:400;margin-left:12px;
+  font-size:.82em;letter-spacing:.06em}
+.maps + .fns{margin-top:8px}
+.fns{font-family:var(--f-mono);font-size:clamp(.76rem,1vw,1rem);
+  color:var(--ink-2);margin-top:14px;line-height:1.7}
+ol.steps.cmd li{font-size:clamp(.95rem,1.35vw,1.4rem)}
+ol.steps.cmd li .mono{color:var(--accent)}
+.words-lg li{font-family:var(--f-mono);border:1px solid var(--line);border-radius:999px;
+  padding:clamp(10px,1.4vh,16px) clamp(16px,1.8vw,26px);
+  font-size:clamp(1rem,1.7vw,1.7rem);color:var(--ink)}
+.ov-card.skip{opacity:.42}
+.ov-card.skip b::after{content:" · REMIX";color:var(--ink-3)}
+#lean{color:var(--warn);display:none}
+body.lean #lean{display:inline}
+
+/* ---------- build rounds ---------- */
+.build{display:grid;grid-template-columns:1.25fr .75fr;gap:clamp(24px,3vw,56px);align-items:start}
+@media (max-width:980px){.build{grid-template-columns:1fr}}
+ol.steps{list-style:none;counter-reset:st;margin:0;padding:0;
+  display:flex;flex-direction:column;gap:clamp(9px,1.3vh,16px)}
+ol.steps li{counter-increment:st;position:relative;padding-left:3.1em;
+  font-size:clamp(.92rem,1.28vw,1.28rem);line-height:1.45}
+ol.steps li .mono{white-space:nowrap}
+ol.steps li::before{content:counter(st);position:absolute;left:0;top:.1em;
+  font-family:var(--f-mono);font-size:.74em;
+  color:var(--accent);border:1px solid var(--line);border-radius:6px;
+  width:2.4em;height:2.4em;display:flex;align-items:center;justify-content:center}
+.done{margin-top:clamp(18px,2.6vh,30px);border-left:3px solid var(--good);
+  padding:6px 0 6px 16px;font-size:clamp(.95rem,1.3vw,1.3rem)}
+.done b{color:var(--good);font-weight:600;display:block;
+  font-family:var(--f-mono);font-size:.66em;letter-spacing:.18em;
+  text-transform:uppercase;margin-bottom:5px}
+.cd{cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;
+  font-family:var(--f-mono);font-weight:500;font-variant-numeric:tabular-nums;
+  font-size:clamp(3rem,8.5vw,7.5rem);line-height:1;letter-spacing:-.03em;
+  color:var(--ink-3);transition:color .3s}
+.cd.run{color:var(--good)}
+.cd.warn{color:var(--warn)}
+.cd.out{color:var(--bad)}
+.cd.out{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+@media (prefers-reduced-motion:reduce){.cd.out{animation:none}}
+.cd-row{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.cd-reset{font-family:var(--f-mono);font-size:clamp(10px,.78vw,12px);
+  letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);
+  background:none;border:1px solid var(--line);border-radius:999px;
+  padding:5px 12px;cursor:pointer;user-select:none}
+.cd-reset:hover,.cd-reset:focus-visible{border-color:var(--ink-3);color:var(--ink-2)}
+
+.lnk{font-family:var(--f-mono);color:var(--accent);text-decoration:none;
+  border-bottom:1px solid rgba(91,156,248,.4)}
+.lnk:hover,.lnk:focus-visible{color:#fff;border-bottom-color:#fff}
+
+/* ---------- QR ---------- */
+.qrs{display:flex;flex-wrap:wrap;gap:clamp(18px,2.4vw,36px);
+  margin-top:clamp(20px,3vh,40px)}
+.qr-item{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.qr{width:clamp(96px,11vw,168px);height:auto;border-radius:8px;
+  background:#fff;padding:6px;display:block}
+a.qr-cap{font-family:var(--f-mono);font-size:clamp(10px,.8vw,12px);
+  letter-spacing:.1em;color:var(--ink-2);max-width:22ch;word-break:break-all;
+  text-decoration:none;border-bottom:1px solid transparent}
+a.qr-cap:hover,a.qr-cap:focus-visible{color:var(--accent);border-bottom-color:currentColor}
+.qr-item a.qr-img{display:block}
+.cd-lab{cursor:pointer;user-select:none;font-family:var(--f-mono);font-size:clamp(10px,.8vw,13px);
+  letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-top:10px}
+.ov-card.skip{opacity:.42}
+.ov-card.skip b::after{content:" · REMIX";color:var(--ink-3)}
+#lean{color:var(--warn);display:none}
+body.lean #lean{display:inline}
+
+@media (prefers-reduced-motion:reduce){
+  .slide{transition:none}
+  .rail-prog i{transition:none}
+}
+</style>
+
+<div class="rail">
+  <span class="rail-mark">UFSC · ETH FLORIPA</span>
+  <span class="rail-prog"><i id="prog"></i></span>
+  <span class="rail-mark">MODULE 02</span>
+</div>
+
+<main class="deck" id="deck">
+
+<section class="slide" data-at="0" data-block="" data-title="Título">
+  <div class="wrap">
+    <div class="eyebrow">Ethereum Builders Tour · Florianópolis · 25.08.2026</div>
+    <h1>Solidity &amp;<br>Token Standards</h1>
+    <p class="sub">Tonight you deploy.</p>
+  </div>
+  <template class="note">
+    <p>Deploy o <span class="mono">Hello</span> ao vivo enquanto fala. Narra três coisas enquanto confirma: rede de teste, aquilo é gás, a carteira assinou.</p>
+    <p>34% não foi na Class 1. Esses 30 segundos são o contexto inteiro que eles têm.</p>
+  </template>
+</section>
+
+<section class="slide" data-at="3" data-block="01 Wallet" data-timer="10" data-title="1 · Rabby">
+  <div class="wrap">
+    <div class="build">
+      <div>
+        <h2>Get a wallet.</h2>
+        <ol class="steps">
+          <li><a class="lnk" href="https://rabby.io" target="_blank" rel="noopener">rabby.io</a> → install the extension</li>
+          <li>Create a new seed. <strong>A throwaway one.</strong></li>
+          <li>Settings → <strong>Enable testnets</strong></li>
+          <li>Add <strong>Sepolia</strong>, switch to it</li>
+          <li>Copy your address</li>
+        </ol>
+        <p class="done"><b>Done when</b>Rabby says Sepolia, and you have your address on the clipboard.</p>
+        <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://rabby.io" target="_blank" rel="noopener"><img class="qr" alt="QR for https://rabby.io" data-qr="https://rabby.io" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiCAIAAADS3EjhAAAESElEQVR42u3dQWokMQxA0XSo5cBs5v4nnM3A7J0LhCJBkSW53tsn3e30xwUR9mut9QZkercEIDOQGSAzkBnIDJAZyAyQGcgMZAbIDGQGMgNkBjIDZAYyA5kBX3FFfvjX7z+HLcf/f3+TfnNkre7fVd5fIbIavht2M/DQCDIDZAYyA5kBMgOZATKDza68X503URERmU64/9mqCZKJsxrnfTfsZuChEWQGyAxkBjKzBCAzkBkgMyh3Vb1wzxMs8lSd5xGZIOk59TLxu2E3A5mBzACZgcxAZoDMQGaAzGCDyxJ0UDWdcN69LXYzkBkgM5AZIDOQGcgMkBnIDB7LFMg35J3n0fNWl56nqtjNAJmBzEBmgMxAZiAzQGYgM+BTZVMgT5swmDjnUXUjzHnfDbsZyAxkBsgMZAYyA2QGMgNkBhskToGcd9tIZCoib6Ii74QS3w27GcgMkBnIDGQGyAxkBjIDZAaDvNZaVuGLJs4u9LzFxm4GyAxkBsgMZAYyA2QGMgOZAT8udBZI1Y0hPd/z0z5v1QRJ1f04djPw0AgyA2QGMgNkBjIDmQEyg+ZCZ4FUnY0xcd6iajV6nvbR81QVUyDgoRGQGcgMZAbIDGQGMgNkBqMlToH0PGfiafMHPde5anKlaibGbgYeGkFmgMxAZiAzQGYgM0BmsEHoRpi8OY+q3zzxtpGe65y3VhMnhOxm4KERZAbIDGQGMgNkBjIDZAYbhKZA8v5r3nNGJPKbJ84umKexm4HMAJmBzEBmgMxAZiAzQGYwSOKNMPd63tzRc3bhvFts8mZxer6u3Qw8NILMAJmBzEBmgMxAZoDMYIPEKZCJcx6R99zzzpeIiZMrPb91djPw0AgyA2QGMgOZATIDmQEygw2uqhfueZ9Iz1M3er6rvHWO/GzPW2zsZuChEWQGyAxkBjIDZAYyA2QGG5RNgUT+437erEbknImqeYuqlex52ofdDDw0gswAmYHMQGaWAGQGMgNkBuVCN8I8Tc8Jg6rPm/eJet68YzcDmYHMAJmBzACZgcxAZoDMoLnQWSATbyq5dz9hcN5NJSY59rxnuxl4aASZATIDmYHMAJmBzACZwQaJN8JM/E9/1efNmz+omtSZeGKH3QxkBsgMZAYyA2QGMgOZATKD0a6qF554vkXkE1W9q7xTRnqeBNPzr2A3A5mBzACZgcxAZoDMQGaAzGCDyxL8lMi8Rd6sRs8zOfLeVdXdOnYz8NAIMgNkBjIDmVkCkBnIDJAZlDMFMkBksuFpZ67kraTdDDw0gswAmYHMAJmBzEBmgMygubIpkJ5nVETk3UUyce7hvOkTuxnIDGQGyAxkBsgMZAYyA2QGzSVOgVTdvlH1iXreRXIv75SRvFmNqte1m4GHRpAZIDOQGSAzkBnIDJAZNPdaa1kFsJuBzACZgcxAZoDMQGYgM0BmIDNAZiAzkBkgM5AZIDOQGcgMkBnU+wDe/mt0rfnDmgAAAABJRU5ErkJggg=="></a><a class="qr-cap" href="https://rabby.io" target="_blank" rel="noopener">rabby.io</a></div></div>
+      </div>
+      <div>
+        <div class="cd" data-cd>10:00</div>
+        <div class="cd-row"><span class="cd-lab">build time</span><button class="cd-reset" data-reset type="button">reset</button></div>
+      </div>
+    </div>
+  </div>
+  <template class="note">
+    <p><strong>Rabby esconde testnet atrás de um toggle</strong> — não vem ligado. É o passo 3, e é onde 30 pessoas travam se tu não avisar antes.</p>
+    <p>Por que Rabby e não MetaMask: ela simula a transação e mostra o que vai acontecer <em>antes</em> de assinar. Numa aula sobre "é imutável, tu tem um tiro", isso não é preferência, é o argumento.</p>
+    <p>Enquanto instalam, prepara o passo 6: eles vão colar o endereço em algum lugar.</p>
+  </template>
+</section>
+
+<section class="slide" data-at="13" data-block="02 Repo" data-timer="15" data-title="2 · O repo">
+  <div class="wrap">
+    <div class="build">
+      <div>
+        <h2>The repo.</h2>
+        <ol class="steps">
+          <li><a class="lnk" href="https://remix.ethereum.org" target="_blank" rel="noopener">remix.ethereum.org</a> · <span class="mono">UFSCBuilders.sol</span> — struct, mapping, event</li>
+          <li><span class="mono">Token.sol</span> — ERC-20</li>
+          <li><span class="mono">Badge.sol</span> — ERC-721</li>
+          <li><span class="mono">test/</span> — 12 tests, 2 of them fuzzed</li>
+        </ol>
+        <p class="done"><b>Done when</b>You can say what each file does.</p>
+        <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://github.com/kamikazebr/ufsc-builders" target="_blank" rel="noopener"><img class="qr" alt="QR for https://github.com/kamikazebr/ufsc-builders" data-qr="https://github.com/kamikazebr/ufsc-builders" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXIAAAFyCAIAAABnRsZeAAAGiUlEQVR42u3dvYr0RhCGUa9RaHDi+79CJwbncvaFYtma8ltdOiefHf3NQwuK3q/7vn8D+JzfXQJAVgBZAWQFQFYAWQFkBUBWAFkBZAVAVgBZAWQFkBUAWQFkBZAVAFkBZAXY56p8+I8//1p2Of795+/I1Xj+3ue/XDnmPqlnI3Ul/RasVgAvQYCsALICICuArACyAiArgKwAy1x9f9r05/evRuqoUvO7qauReibf9luwWgFkBZAVQFYAZAWQFUBWAGQFkBVggSv1xSdOUlaO2Rztpz77fEb2/Z1wvlYrgKwAsgLICoCsALICyAqArACyAixwuQSfMnO32spRVWY0T5zuPXFC12oFkBUAWQFkBZAVAFkBZAWQFQBZAZqYsv2Yyhxt32zo286oMilrjtZqBZAVQFYAZAWQFUBWAGQFkBVAVgB+iU3Zvm2iceb5po4qtWtsam74bb8FqxVAVgBZAWQFQFYAWQFkBUBWAFkBFmicsu3bY3Wm51nJylxp32crd/DE8+27Vn4LViuArACyAsgKgKwAsgLICoCsALICLFOasn3bfrR9Unu79tk3++u3YLUCyAogKwCyAsgKICsAsgLICiArwKuUpmxn7hta8XzMqSnMmdfKxOrpz7PVCuAlCJAVAFkBZAWQFQBZAWQFkBWAB0P3su2bSe075n370fZdDVfy+2fUN7/bd52tVgAvQYCsALICICuArACyAiArgKwAC1x9f3rmTrdmYf+fe5Tau3fmU9d3JZ8/m3rarVYAWQFkBZAVAFkBZAWQFQBZAWQFWOA68aBn7kfbN8GZmnbtu5J993fm/sqpK9n3tFutAF6CAFkBkBVAVgBZAWQFQFYAWQHW+7rv+8cfnrn354nfu+9apZ4cd8FqBfASBCArgKwAsgIgK4CsALICyArARwydsq1ITX+m9rKtqOxmOvOMZl6N1B1M/Y6sVgAvQYCsALICICuArACyAiArgKwAC5SmbCv6phJnTspW7DuqmZ9NPVd9v5TU7K/VCiArgKwAsgIgK4CsALICICuArAALNO5le+JsaJ/U9OfMKczUlZy5+3LliZ15B61WAFkBZAWQFQBZAWQFkBUAWQFkBVjgqnz4xInG1I6kMydW+65k3/mm9sGd+VtIzWdbrQBeggBZAZAVQFYAWQFkBUBWAFkB1ivtZdsnNZU4c8fZmXfhxL2KU/e375hTV9JqBfASBMgKgKwAsgLICiArALICyAqw3jXzsPqmTk/c6/TEPYP7rsbM76385ZnPpNUK4CUIkBUAWQFkBZAVAFkBZAWQFeDlYnvZmlj9lJkTq313P3XMqac99WzYyxbwEgTICoCsALICyAqArACyAsgK8HKxvWz3zTv2TZ2mpopTc7SpY+67R6nfUeqYrVYAWQFkBZAVAFkBZAWQFQBZAWQFWKC0l+3M/1ZfYdr1Uxzzm/+y1QrgJQiQFUBWAGQFkBVAVgBkBZAVYIHGvWwrc6Wp7z1xR9LKX654PqoTJ7Ads9UK4CUIkBUAWQFkBZAVAFkBZAWQFYBfrhMPujIdaL/S7//l1FGl9rKtmDm9nTpmqxXASxAgK4CsAMgKICuArADICiArwAKxKdvUHqt9x5yaDd23K/DMqeLUPTrxl2K1AsgKICuArADICiArgKwAyAogK8ACpSnbmTt0mt/91NWofG9q5njmlUxd59Qv1GoFkBVAVgBZAZAVQFYAWQGQFUBWgAVKU7apSco+z1OJfROcqVnJvp1f9+1HO/MOzjwqqxVAVgBZAWQFQFYAWQFkBUBWAFkBFrj6/vTMnW737RtaOaqZ87t9T11qN+LUE2u1AngJApAVQFYAWQFkxSUAZAWQFUBWAH7sSn3xifOOfef7tmPum3WuPBvPf3nmtOvMnX2tVgBZAWQFkBUAWQFkBZAVAFkBZAVY4HIJ5ps5k1r53pn7/lakrlXqs1YrgJcgQFYAZAWQFUBWAFkBkBVAVoD1TNkeoG8mtbJ7a+qoUpOjlWPuu7+pz1qtAF6CAFkBkBVAVgBZAWQFQFYAWQHW+7rv+8cfnrlf6b5jrpxRxYl3sO98+56cfXfQagWQFUBWAFkBkBVAVgBZAZAVQFaABRqnbE9UmbNMfW/qmCtn1Gfm+aZ2503NlFutALICyAogKwCyAsgKICsAsgLICrBAacoWwGoFkBVAVgBZAZAVQFYAWQGQFUBWAFkBkBVAVgBZAZAVQFYAWQFkBUBWAFkBXuE/j2HvYFzcGJAAAAAASUVORK5CYII="></a><a class="qr-cap" href="https://github.com/kamikazebr/ufsc-builders" target="_blank" rel="noopener">github.com/kamikazebr/ufsc-builders</a></div><div class="qr-item"><a class="qr-img" href="https://remix.ethereum.org" target="_blank" rel="noopener"><img class="qr" alt="QR for https://remix.ethereum.org" data-qr="https://remix.ethereum.org" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiCAIAAADS3EjhAAAETUlEQVR42u3dQWrjQBCG0ThoGZjN3P+EsxnIXrlAEAnt0l/Vfm8fO27rowUuWo/zPN+ASu+WAGQGMgNkBjIDmQEyA5kBMgOZgcwAmYHMQGaAzEBmgMxAZiAz4CeOlT/++PN3s+X4/P8vshrX73v9yit/23M19rs27GbgphFkBsgMZAYyA2QGMgNkBjc46l565VfzOivTCT0nGybOW+x3bdjNwE0jyAyQGcgMZGYJQGYgM0BmEHek3rjuF/e6CYOeJ4WkvqO6/2ritWE3AzeNIDNAZiAzkJklAJmBzACZQdxhCZ4ldcpI3dNkep7YYTcDZAYyA5kBMgOZgcwAmYHMgG+ZAvmFied51M2IYDcDmYHMAJmBzACZgcxAZoDMoJXYFMjECYOViYr9nnLi2rCbgcxAZoDMQGaAzEBmIDNAZtBK4RRI3dxDysrJGXV/2/N/frVrw24GMgOZATIDmYHMLAHIDGQGyAziHud5WoWn6DkjUjdf4nkxdjOQGcgMkBnIDJAZyAxkBsgMWlk6C2S/uYe6yYaep1/0nORInUFStxp2M3DTCDIDZAYyA5kBMgOZATKDGxSeBWJW41mft+59e65GSt1VZzcDN40gM0BmIDOQGSAzkBkgM7hB4VkgdXrOl+z3dJXU5MrEa9JuBjIDmQEyA5mBzCwByAxkBsgM4grPArk28fSLnudqpEx8MosnwoCbRkBmIDOQGSAzkBkgM5AZbGxpCqTu9Iv9pjE8EabDtZE6r8VuBm4aQWaAzEBmIDNAZiAzQGZwg6Unwqz84j7xt/yU1DqnPlHPlbSbgZtGkBkgM5AZIDOQGcgMkBk0V3gWSOoX9xUTT+yo46yXZ/1XdjNw0wgyA2QGMgOZATIDmQEygxssTYFcq5sR6TlhUDfJkZps6Pl5J36DdjNw0wgyA2QGMgOZATIDmQEygxssPRFm4pRAzyek1Kk73SR1msvKN5j6fu1mIDOQGSAzkBnIDJAZyAyQGdxgaQqk7jf1ia+cmi9JTTZMPPuk7hk3djNw0wgyA2QGMgOZWQKQGcgMkBnEFZ4FMtHKSRLXq/FqZ5C82ue1m4HMQGaAzEBmIDNLADIDmQEyg7ij7qV7/tJfN7mSOu2j5yzOq8152M1AZiAzQGYgM5CZJQCZgcwAmUHckXrjidMYK+db9Dwbo+50k55S62w3A5mBzACZgcxAZoDMQGaAzOAGhyX4udScx8RXXnnfulc2BQJuGgGZgcxAZoDMQGaAzEBmsDFTIL+QOv2ibvpk4hkkPc96sZuBm0aQGSAzkBnIzBKAzEBmgMwgLjYFkpo/qPufU+db1On51J6Jz+Wxm4GbRpAZIDOQGcgMkBnIDJAZ3KBwCiQ1uzDxE+0357HyvqkJIWeBgJtGQGYgM5AZIDOQGcgMkBmM9jjP0yqA3QxkBsgMZAYyA2QGMgOZATIDmQEyA5mBzACZgcwAmYHMQGaAzCDvCy+pjfwxLVFDAAAAAElFTkSuQmCC"></a><a class="qr-cap" href="https://remix.ethereum.org" target="_blank" rel="noopener">remix.ethereum.org</a></div></div>
+      </div>
+      <div>
+        <div class="cd" data-cd>15:00</div>
+        <div class="cd-row"><span class="cd-lab">build time</span><button class="cd-reset" data-reset type="button">reset</button></div>
+      </div>
+    </div>
+  </div>
+  <template class="note">
+    <p>Os 15 minutos no <span class="mono">UFSCBuilders.sol</span>. São 40 linhas e cada ideia da sessão está lá: struct, mapping, <span class="mono">msg.sender</span>, <span class="mono">calldata</span> vs <span class="mono">storage</span>, evento, custom error, insert-ou-update.</p>
+    <p>Roda <span class="mono">forge test</span> na tua tela. O fuzz com 512 runs é o momento — eles nunca viram um teste gerar os próprios inputs.</p>
+    <p>Mostra também os dois warnings do <span class="mono">forge build</span>: <span class="mono">erc20-unchecked-transfer</span>. O toolchain avisando sozinho, que é a tese.</p>
+  </template>
+</section>
+
+<section class="slide" data-at="28" data-block="03 Tabela" data-title="3 · A tabela">
+  <div class="wrap">
+    <h2>A token is a table.</h2>
+    <div class="tbls">
+      <div>
+        <div class="tbl-h">ERC-20 · fungible</div>
+        <table class="demo">
+          <thead><tr><th>holder</th><th>amount</th></tr></thead>
+          <tbody>
+            <tr><td><span class="who">Fran</span> <span class="adr">0x123…</span></td><td class="num">2</td></tr>
+            <tr><td><span class="who">felipe</span> <span class="adr">0x234…</span></td><td class="num">0</td></tr>
+            <tr><td><span class="who">marcos</span> <span class="adr">0x345…</span></td><td class="num">10</td></tr>
+            <tr><td><span class="who">andreson</span> <span class="adr">0x456…</span></td><td class="num">7</td></tr>
+            <tr class="sum"><td>total supply</td><td class="num">19</td></tr>
+          </tbody>
+        </table>
+        <p class="maps">mapping(address =&gt; uint256) <b>public balanceOf</b>;</p>
+        <p class="fns">transfer(to, amount)</p>
+      </div>
+      <div>
+        <div class="tbl-h two">ERC-721 · unique</div>
+        <table class="demo">
+          <thead><tr><th>id</th><th>owner</th><th>metadata</th></tr></thead>
+          <tbody>
+            <tr><td class="num">1</td><td><span class="who">Fran</span> <span class="adr">0x123…</span></td><td class="meta">{ … }</td></tr>
+            <tr><td class="num">2</td><td><span class="who">felipe</span> <span class="adr">0x234…</span></td><td class="meta">{ … }</td></tr>
+            <tr><td class="num">3</td><td><span class="who">marcos</span> <span class="adr">0x345…</span></td><td class="meta">{ … }</td></tr>
+            <tr><td class="num">4</td><td><span class="who">andreson</span> <span class="adr">0x456…</span></td><td class="meta">{ … }</td></tr>
+          </tbody>
+        </table>
+        <p class="maps">mapping(uint256 =&gt; address) <b>public ownerOf</b>;</p>
+        <p class="fns">mint(to, uri)</p>
+      </div>
+    </div>
+  </div>
+  <template class="note">
+    <p>A tabela está no slide, então tu <strong>não precisa abrir a planilha</strong>. Abre só se quiser editar ao vivo — mudar um número e o Total Supply mudar junto é o momento que vale.</p>
+    <p>O que dizer: à esquerda a quantidade é tudo que existe; à direita cada linha é uma coisa só, com um id. <strong>É a mesma tabela — só muda se a linha é uma quantidade ou um item.</strong></p>
+    <p><strong>O nome é etiqueta pra humano.</strong> A chave do mapping é o endereço — por isso ele aparece do lado, e por isso as duas declarações embaixo estão invertidas: no ERC-20 o endereço é a chave, no ERC-721 ele é o valor.</p>
+    <p>As <strong>mesmas quatro pessoas, mesma ordem, mesmos endereços</strong> nas duas tabelas. Só a estrutura muda. Dá pra ler na horizontal: o felipe tem <strong>zero</strong> token à esquerda e mesmo assim <strong>é dono do NFT #2</strong> à direita — são dois contratos independentes, cada um com sua tabela.</p>
+    <p><strong>O ponto que quase ninguém conta:</strong> <span class="mono">balanceOf</span> e <span class="mono">ownerOf</span> não são funções que alguém escreveu. São o <span class="mono">public</span> na frente do mapping — o compilador gera o getter de graça. "A função" e "a tabela" são a mesma coisa.</p>
+    <p>Ressalva honesta se alguém perguntar: o OpenZeppelin guarda os mappings como <span class="mono">private</span> e expõe funções, pra poder mudar a implementação depois. Aqui está simplificado, e é Solidity válido.</p>
+    <p>Se abrir a planilha: abas <span class="mono">ERC20</span> e <span class="mono">Loja</span>. A Loja é <em>outro contrato</em> que lê o token — cada aba tem um endereço no nome. <strong>Pula a ERC1155</strong>, não é do teu módulo.</p>
+  </template>
+</section>
+
+<section class="slide" data-at="33" data-block="03 IPFS" data-title="Metadata &amp; IPFS">
+  <div class="wrap">
+    <h2>Where the picture lives</h2>
+    <div class="hops">
+      <div class="hop"><span class="k">ownerOf(7)</span> → <span class="v">0x123…</span>&nbsp;&nbsp;<span class="k">on-chain, forever</span></div>
+      <div class="arrow">↓</div>
+      <div class="hop j">{ "name": <span class="v">"UFSC Builder #7"</span>, "image": <span class="v">"ipfs://bafy…/badge.png"</span> }<br><span class="k">built on demand. this JSON is not a file anywhere.</span></div>
+      <div class="arrow">↓ <b>67 KB — too big for the chain</b></div>
+      <div class="hop img">the picture <span class="k">· pinned on IPFS</span></div>
+    </div>
+    <p class="maps" style="margin-top:clamp(16px,2.2vh,26px)">small and dynamic <b>on-chain</b> · big and static <b>off-chain</b></p>
+    <div class="qrs"><div class="qr-item"><img class="qr" alt="QR for pinata" data-qr="https://pinata.cloud" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiCAIAAADS3EjhAAAESUlEQVR42u3dQY7bMAxA0abwcoBuev8TdlNg9uoFCk8LhiIpv7efJFbyIQNDyK+11jcg03dLADIDmQEyA5mBzACZgcwAmYHMQGaAzEBmIDNAZiAzQGYgM5AZ8C+uyB9//Ph52HJ8/v6V9Mp5a3X/me/fd+L1Tvxt2M3ATSPIDJAZyAxkBsgMZAbIDDa48l46b8IgIjKdEPnbvFmNifMW5/027GbgphFkBsgMZAYyswQgM5AZIDMod1W9cdXZGHmq5jwif5s31+K3YTcDmYHMAJmBzEBmgMxAZoDMYLPLErxL3ikjzhGxmwEyA5mBzACZgcwAmYHMQGbAl0yB/Ie8aYx7ZkTsZoDMQGYgM0BmIDNAZiAzkBnwpbIpkKpnc1RdUWQa47y1etpvw24GMgOZATIDmYHMAJmBzACZwQaJUyDnnSSRd9pHz/f127CbgcwAmYHMQGaAzEBmIDNAZjBIaArkaWdUnCdvvsRvw24GMgOZATIDmYHMAJmBzACZwWahKZCJZ1RUfeaqk0KqVjJvNfKuN+87spuBm0aQGSAzkBnIDJAZyAyQGWzwWmslvXTVdIJTKN71LZw3uVJ1vXYzcNMIMgNkBjIDmQEyA5kBMoMNEqdA7uVNJ0w8K2LiOve8orzfRmQ17GbgphFkBsgMZAYyA2QGMgNkBhuEpkB6TnJMPMEisho9n66S9x1VrYYpEHDTCDIDZAYyA2QGMgOZATKD5q68lz7vJImqK6qamKk6dWPi78puBjIDmQEyA5mBzCwByAxkBsgMypWdBXKv59kYE0/sqPrMees88X3tZuCmEWQGyAxkBjIDZAYyA2QGGyROgTztKScR511vz5NCqp40ZDcDN40gM0BmIDOQGSAzkBkgM9jg6vmxqv5bn/eper5vz5NCIp+q51Ns7GbgphFkBsgMZAYyA2QGMgNkBhs0nQLJmwOIvG/e305cq7yZiapJDk+EATeNgMxAZiAzQGYgM5AZIDMYLfREmKfpOWFQdb1VZ65MXEm7GcgMZAbIDGQGMgNkBjIDZAYbhM4CqXpCSp77CYPI/EHPJ5WY5Njzme1m4KYRZAbIDGQGMgNkBjIDZAYbJD4RZuJ/+vNeOTLnkTd9MnG+xG4GyAxkBjIDZAYyA5kBMgOZAX91Vb3x0+YPqs5NyTtlpOdJMD0/ld0MZAYyA2QGMgOZATIDmQEygw0uS/AuVU9XiXyq855EU3VFdjNw0wgyA2QGMgOZWQKQGcgMkBmUMwWySeSZL5HJhrz37bmS96pmROxm4KYRZAbIDGQGMgNkBjIDZAYblE2B9JwwiMibIeg593DeOSJ2M3DTCMgMZAYyA2QGMgOZATKD0RKnQKqevlF1RZHphKq1mjjJkfct2M3ATSMgM5AZyAyQGcgMZAbIDEZ7rbWsAtjNQGaAzEBmIDNAZiAzkBkgM5AZIDOQGcgMkBnIDJAZyAxkBsgM6v0B1sZziT12qJAAAAAASUVORK5CYII="><span class="qr-cap">pinata.cloud · free 1 GB</span></div></div>
+  </div>
+  <template class="note">
+    <p><strong>Isso é o <span class="mono">{ … }</span> da tabela anterior, aberto</strong> — e é o desenho real do contrato deles.</p>
+    <p>O JSON é montado dentro do <span class="mono">tokenURI</span> na hora da chamada. <strong>Não existe arquivo em lugar nenhum</strong>, e é por isso que o badge diz o número de cada um sem ninguém pinar trinta arquivos. A imagem tem que ser pinada porque 67 KB de PNG on-chain custaria uma fortuna.</p>
+    <p><strong>Um CID é o hash do conteúdo.</strong> Muda um byte, muda o CID. Isso dá <strong>integridade</strong> — ninguém troca a imagem por baixo. Não dá <strong>disponibilidade</strong>: o conteúdo vive enquanto alguém pina. "Está no IPFS" quer dizer "alguém ainda está pagando pra isso existir".</p>
+    <p><span class="mono">ipfs://</span> não é URL que navegador entende — alguém traduz pra gateway, e aí uma empresa entra no meio de um ativo "descentralizado". Mostra isso abrindo o teu gateway na tela.</p>
+    <p><strong>Pergunta boa pra deixar no ar:</strong> se eu apagar essa imagem da minha conta do Pinata amanhã, o que acontece com o NFT de vocês?</p>
+  </template>
+</section>
+
+<section class="slide" data-at="36" data-block="04 OZ" data-title="4 · Por que OpenZeppelin">
+  <div class="wrap stack">
+    <h2>Why OpenZeppelin</h2>
+    <ul class="words-lg">
+      <li>Transfer event</li><li>decimals</li><li>address(0)</li><li>overflow</li><li>allowance</li>
+    </ul>
+  </div>
+  <template class="note">
+    <p>Cinco palavras, a história é tua. Cada uma é dinheiro que alguém já perdeu.</p>
+    <p>Uma pergunta só, e eles conseguem responder porque viveram: <em>"teu token apareceu na carteira. Ninguém registrou ele. O que avisou a carteira que ele existia?"</em> → evento.</p>
+    <p>Se quiser um nível abaixo no overflow, teu vídeo de 16 min está em <span class="mono">docs/deeper.md</span>.</p>
+  </template>
+</section>
+
+<section class="slide" data-at="43" data-block="05 Etherscan" data-timer="5" data-title="5 · Etherscan key">
+  <div class="wrap">
+    <div class="build">
+      <div>
+        <h2>Etherscan API key.</h2>
+        <ol class="steps">
+          <li><a class="lnk" href="https://etherscan.io/apidashboard" target="_blank" rel="noopener">etherscan.io/apidashboard</a></li>
+          <li>Create a key. <strong>One key, 60+ chains.</strong></li>
+          <li>Paste it into <span class="mono">.env</span></li>
+        </ol>
+        <p class="done"><b>Done when</b><span class="mono">ETHERSCAN_API_KEY</span> is in your .env</p>
+        <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://etherscan.io/apidashboard" target="_blank" rel="noopener"><img class="qr" alt="QR for https://etherscan.io/apidashboard" data-qr="https://etherscan.io/apidashboard" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUoAAAFKCAIAAAD0S4FSAAAFXElEQVR42u3dvW7cMBCF0Wyg0kCavP8TpgngnulSCnaY8Z2hzun3T6sPVDEgX2utb8CJvrsEIG9A3oC8AXkD8gbkDfIG5A3IG5A3IG9A3iBvQN6AvAF5A/IG5A1Pdu28+O3Hz8Mux/vvX0VX4/6dd67kzjvv/N66O6fuX3jaPWn1Bg/ngLwBeQPyBuQNyBvkDcgbaOiqe+vURNS9nakmc2lf87l173zePWn1Bg/ngLwBeQPyBuQNyBuQN8gbGOdKfXDdpE7dZFLdXFrq9+7Mh9XN0qWu5MR70uoNHs4BeQPyBuQNyBuQNyBvkDcwzuUSfI3UqZepybOdX9RzRzSrNyBvQN6AvAF5g7wBeQPyBuQN/Bem1j4hdbro03Ymw+oNyBvkDcgbkDcgb0DegLwBecPBYlNrE/fTSk2PTTxtc+dbpXZiO2+PN6s3eDgH5A3IG5A3IG9A3iBvQN5AQ4VTa+ftxTVxeuxe3QmhPa/V0/aHs3qDvAF5A/IG5A3IG5A3yBuQN9DQ1tTaeXtT7fze1A5hqe88cQ7P6g3IG5A3IG9A3oC8Qd6AvAF5A3FbU2s99+JKzZY9baYt9c516v6j1L9v9QYP54C8AXkD8gbkDcgb5A3IG2iocK+1iXNaE03cL63uX9i5GnX3c6oUqzd4OAfkDcgbkDcgb0DeIG9A3kBDhXut1UlNYk3cia3n1Uh52u5xVm/wcA7IG5A3IG9A3oC8Qd6AvIGGXmutf35xaje1utmjOj2nmlInhKauVc9/3wmhgLwBeYO8AXkD8gbkDcgbkDc8SuEJofcmTkRN3OPt/lulZul6zvDtfOe6/8gJoYC8Qd6AvAF5A/IG5A3IG+QNHKbwhNCe52lO3F0stVNX6lrt/N6n7Wln9QYP54C8AXkD8gbkDcgbkDfIGxjnqnvrnVmc1GtT73yvbsZr5/emJgt73rE97xyrN3g4B+QNyBuQNyBvQN4gb0DeQEPXeT+p51mNE39v6rV113niTmxWb0DeIG9A3oC8AXkD8gbkDfIGDvNaa4370hNPkJw4S5c6A/S8fyF18qzVGzycA/IG5A3IG5A3IG+QNyBvoKGmU2t1U0328er/L/T891MzfKbWAHmDvAF5A/IG5A3IG5A3yBs4zNYJoXXTNnXTRRN3zKr7zj3PPN25kj3PLU1NNFq9wcM5IG9A3oC8AXkD8gZ5A/IGGtqaWkvNS6UmsXrOeJ23I1pK6n6uu6+s3uDhHJA3IG9A3oC8AXmDvAF5Aw3F9lpLTZ6dt29Zz9my1I5oda/tOZdm9QYP54C8AXkD8gbkDcgbkDfIGxincK+18167Y+LOZBOn9FL/UWrHO6s3eDgH5A3IG5A3IG9A3oC8Qd7AOIV7rU10PyE08YTQ1IRf6t7oeS5t6mpYvcHDOSBvQN6AvAF5A/IGeQPyBhq66t564oyXq/Hx79xziqvndXZCKCBvQN4gb0DegLwBeQPyBuQN/HWlPnji3NJ5s1Y9Z8vuP/e8ucO6/eGs3uDhHJA3IG9A3oC8AXmDvAF5Aw1dLsHH9Twxs27mqc7O1eg5ldjztFyrN3g4B+QNyBuQNyBvQN4gb0DeQEOm1j6h56xV3TmeqR3RJs6l9ZxotHqDh3NA3oC8AXkD8gbkDfIG5A00FJta67kHWN13rpviSu3iVved6z43ddel9sOzeoOHc0DegLwBeQPyBuQN8gbkDTRUOLXW88zEul+UmohKzYdN/I/qrnPP+8rqDR7OAXkD8gbkDcgbkDfIG5A30NBrreUqgNUbkDcgb0DegLwBeYO8AXkD8gbkDcgbkDfIG5A3IG9A3oC8AXmDvIHT/AGQkjXoHl9Y0QAAAABJRU5ErkJggg=="></a><a class="qr-cap" href="https://etherscan.io/apidashboard" target="_blank" rel="noopener">etherscan.io/apidashboard</a></div></div>
+      </div>
+      <div>
+        <div class="cd" data-cd>05:00</div>
+        <div class="cd-row"><span class="cd-lab">build time</span><button class="cd-reset" data-reset type="button">reset</button></div>
+      </div>
+    </div>
+  </div>
+  <template class="note">
+    <p>V2 unificou tudo: uma chave para 60+ chains, passa o chain id. A V1 morreu em ago/2025 e responde erro — tutorial antigo com <span class="mono">api-sepolia.etherscan.io</span> está desatualizado.</p>
+    <p>Por que importa, e é a ligação com o passo 2: eles usam <span class="mono">At Address</span> no teu contrato porque ele está <strong>verificado</strong>. Verificar o deles é retribuir.</p>
+    <p>Constructor args é onde a verificação falha em 90% dos casos. <span class="mono">docs/verify.md</span>.</p>
+  </template>
+</section>
+
+<section class="slide" data-at="48" data-block="06 SepETH" data-timer="8" data-title="6 · Endereços e gás">
+  <div class="wrap">
+    <div class="build">
+      <div>
+        <h2>Paste your address.</h2>
+        <ol class="steps">
+          <li>Scan the QR → paste your address → submit</li>
+          <li>Wait ~30 seconds</li>
+          <li>Check Rabby. You have Sepolia ETH.</li>
+          <li>Now deploy: <span class="mono">Token.sol</span> → Sepolia</li>
+        </ol>
+        <p class="done"><b>Done when</b>Your token exists on a live chain.</p>
+        <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://forms.gle/REPLACE-ME-BEFORE-CLASS" target="_blank" rel="noopener"><img class="qr" alt="QR for https://forms.gle/REPLACE-ME-BEFORE-CLASS" data-qr="https://forms.gle/REPLACE-ME-BEFORE-CLASS" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUoAAAFKCAIAAAD0S4FSAAAFQ0lEQVR42u3dsW7bQBRE0ShgGSBN/v8L0wRIz3QpDcPr8bxdntNLFCleLIuH5eu+72/Aib67BCBvQN6AvAF5A/IG5A3yBuQNyBuQNyBvQN4gb0DegLwBeQPyBuQNT3atfPjHz1+HXY6/f35/+Hzf/mzuSp73m92Tn3WtrN7g4RyQNyBvQN6AvAF5g7wBeQMDXbmvzk0mrWjNWuWmx1r/QmvybOW4592TVm/wcA7IG5A3IG9A3oC8AXmDvIHtXK0D5yZ1WpNJK2e0MqeV++zTnHdPWr3Bwzkgb0DegLwBeQPyBnkD8gYGulyC92vNh+04l9Z6bylWb5A3IG9A3oC8AXkD8gZ5A/IGhjO19mlak1itd56uMJdm9QbkDcgb5A3IG5A3IG9A3oC84bFqU2tPm1vyLs75zrsnrd7g4RyQNyBvQN6AvAF5g7wBeQMDBafWnjanlXsn5nlvJm29P/Rp96TVG+QNyBuQNyBvQN6AvEHegLyBgZam1rzn8Wu03i6am4fLna970uoN8gbkDcgbkDcgb0DeIG9A3sBwS1NruT2xcsfNzVq19vFaOW7uP5q5e1xObge4lW+2eoOHc0DegLwBeQPyBuQN8gbkDQxU22utNWu147spW9OBuX/hPDNn6aze4OEckDcgb0DegLwBeYO8AXkDA22511ruN8+8Grm9x3Z8B+iOx23dk1Zv8HAOyBuQNyBvQN6AvEHegLyBgV73fX/4w62pppnvxMxdq9b+cK2r8bT/KHfHWr3Bwzkgb0DegLwBeQPyBnkD8gYGup52wivzUuftPda6GjPn8M7bAc7qDR7OAXkD8gbkDcgbkDfIG5A3MFBtai33xswVuSmuHfcP8wbYCb/ZXmuAvEHegLwBeQPyBuQNyBvkDRwmOLXWmi3LyR13ZW6pdZ1nzoe1dsub+aus3uDhHJA3IG9A3oC8AXmDvAF5AwO97vse+LNyb59cOe7M3cVaZ3Te1NrMOUt7rQHyBnkD8gbkDcgbkDcgb5A3cJjgXmu5SZ3cHmC5mafcZ3P/0Y5TejvKXWerN3g4B+QNyBuQNyBvQN4gb0DewEBLU2sz37c484zO2wNs5vmunNF5O/xZvcHDOSBvQN6AvAF5A/IGeQPyBgZamlpr7cV13rTczKsxc3+43D943l56Vm/wcA7IG5A3IG9A3oC8Qd6AvIGBrpk/a+auV62dyXLfnNuZrDXhN/O4rRk+qzd4OAfkDcgbkDcgb0DeIG9A3sBAj3tD6I6TZy2tibeZVqb07LUGyBuQN8gbkDcgb0DegLwBeQP/bfmG0NZvzu3ElruS582Wta7Vjne71Rs8nAPyBuQNyBuQNyBvkDcgb2CgLfday1mZTGrtpzVzmqp1b+Qmz2ZOJVq9wcM5IG9A3oC8AXkD8gbkDfIGtnPlvvq8aaqVubTcTJtv/pq7zl5rgLwBeQPyBuQN8gbkDcgbkDfwKa7WgXfce6y1f1hrF7fcdd7xvaW5Xdxyd6zVGzycA/IG5A3IG5A3IG+QNyBvYKDLJXi/1m5brb3HWnNaO76Ls3Ulrd7g4RyQNyBvQN6AvAF5A/IGeQPbMbX2RVp7y+XmpWae0Y7/YO4/snqDh3NA3oC8AXkD8gbkDfIG5A0MVJtam7kn1orcDmGtb27t02bSzuoNyBvkDcgbkDcgb0DegLwBecPBglNrrUmd1hk9bQ7v7fM972rkeEMoIG9A3iBvQN6AvAF5A/IG5A2P8rrv21UAqzcgb0DegLwBeQPyBnkD8gbkDcgbkDcgb5A3IG9A3oC8AXkD8gZ5A6f5B+sA8ZtYxiqbAAAAAElFTkSuQmCC"></a><a class="qr-cap" href="https://forms.gle/REPLACE-ME-BEFORE-CLASS" target="_blank" rel="noopener">forms.gle/REPLACE-ME-BEFORE-CLASS</a></div></div>
+      </div>
+      <div>
+        <div class="cd" data-cd>08:00</div>
+        <div class="cd-row"><span class="cd-lab">build time</span><button class="cd-reset" data-reset type="button">reset</button></div>
+      </div>
+    </div>
+  </div>
+  <template class="note">
+    <p class="say"><strong>⚠️ Cria o formulário e roda <span class="mono">make-qr.py</span> antes.</strong> A legenda embaixo do QR mostra a URL — se ainda estiver <span class="mono">REPLACE-ME</span>, tu vê na tela ensaiando.</p>
+    <p><strong>Formulário do Google, um campo só: "your wallet address".</strong> Respostas caem numa planilha, tu vê a contagem subir e sabe quando parar de esperar. Melhor que grupo de Telegram: não se perde no scroll, não fica visível pro evento inteiro, e a coluna já sai limpa.</p>
+    <p><strong>Faucet não escala pra 30 pessoas e contrato de faucet não resolve</strong> — pra chamar precisa de gás, que é justamente o que falta. Tu empurra.</p>
+    <p>Copia a coluna da planilha para <span class="mono">script/raw.txt</span> (com cabeçalho, timestamp, do jeito que vier), e depois:</p>
+    <p class="say"><span class="mono">make addresses &amp;&amp; make fund</span></p>
+    <p>O <span class="mono">make addresses</span> extrai todo <span class="mono">0x…</span> de texto bagunçado, minúsculo, sem duplicata. Não precisa limpar nada. O <span class="mono">fund</span> manda 0.01 pra cada um numa transação e pula quem já tem saldo.</p>
+    <p><strong>Quanto mandar: 0,05 por aluno, 1,5 no total.</strong> Medido, não chutado — um aluno fazendo tudo (deploy do ERC-20, register+NFT, 10 mints, 10 transfers, 5 approves) queima ~1,9M de gás. 0,05 cobre isso até ~25 gwei, muito acima do normal da Sepolia.</p>
+    <p><strong>Segundo QR = faucet PoW do pk910</strong>, plano B e caminho de casa deles. Sem cadastro, sem exigir saldo em mainnet. 0,277 SepETH/h, claim mínimo 0,05 → <strong>~11 min por pessoa</strong>. Ruim pra 30 ao vivo, ótimo pra um sozinho — e 0,05 é exatamente um claim mínimo, então eles se viram sozinhos se acabar.</p>
+    <p><strong>Melhor ainda: coleta hoje à noite no grupo e funda antes.</strong> Aí esse bloco cai pra 3 minutos e vira só o deploy.</p>
+  </template>
+</section>
+
+<section class="slide" data-at="56" data-block="07 Subgraph" data-timer="12" data-title="7 · Subgraph">
+  <div class="wrap">
+    <div class="build">
+      <div>
+        <h2>Ask it questions.</h2>
+        <ol class="steps">
+          <li>Open the playground <span class="dim">· nothing to install</span></li>
+          <li>Type a query. The schema autocompletes.</li>
+          <li>Find <strong>your own name</strong> in the result</li>
+          <li>Now change it: order by <span class="mono">updatedAt</span>, ask for <span class="mono">badge</span></li>
+        </ol>
+        <p class="done"><b>Done when</b>The playground returns you.</p>
+        <div class="qrs"><div class="qr-item"><img class="qr" alt="QR for the subgraph" data-qr="https://thegraph.com/studio" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUoAAAFKCAIAAAD0S4FSAAAFaUlEQVR42u3dMW7bQBCG0ShgGSBN7n9CNwHSMxcICNvjyfxDvtdLoih9WBaD3dd5nt+AO/ruFoC8AXkD8gbkDcgbkDfIG5A3IG9A3oC8AXmDvAF5A/IG5A3IG5A3PNlRefGPn79udjv+/H4b+dzKnby+5ut3zvy+lavyn7R6g4dzQN6AvAF5A/IG5A3yBuQNhDv63npqIupaZaqpb7as8tqpubS++bC+b3S//6TVGzycA/IG5A3IG5A3IG9A3iBvYJ1j6oP7JnX6JpMy9wDru6rrd67M0mXa+J+0eoOHc0DegLwBeQPyBuQNyBvkDaxzuAXbTU2eZe5bhtUb5A3IG5A3IG9A3oC8Qd6AvIFwptY+oG8+rPK5mczDWb0BeQPyBuQN8gbkDcgbkDcgb+CfxqbWNk4m9V1zZS5t6qTOqXfOPAHW6g3IG5A3IG+QNyBvQN6AvAF5A+/UOLW2cYewyjfq212s705OXfP9Ju2s3oC8AXkD8gZ5A/IG5A3IG5A38E6v8zzdhS8xNVvWd819s2XOD7V6A/IG5A3yBuQNyBuQNyBvQN7wWKW91jL34pqaiKq8dmoPsMy5tCl9/42pOTyrN3g4B+QNyBuQNyBvQN4gb0DeQKDSXmuZs1ZTMme8Ms8enfoVMifP+t7Z6g0ezgF5A/IG5A3IG5A3yBuQNxCotNda5mRS3zeaOk+z75o3/vp9/5zrb7Rx9zirN3g4B+QNyBuQNyBvQN4gb0DeQKDSXmt9pk5UzLyqjRNvmTNeT/vnWL3Bwzkgb0DegLwBeQPyBnkD8gYClfZam9p7bOpzp06B7PvczN3jMjkhFPBwDsgbkDcgb5A3IG9A3oC8gS9x9L115k5dlXfum9OamqWrqHzu0+bhpr6v1Rs8nAPyBuQNyBuQNyBvkDcgbyBQ4wmhfft4Pe1cywqnqSbc56mpRKs3eDgH5A3IG5A3IG9A3iBvQN5AoGPqg6dm2vququ9uXJv6vlM7z/Wdptr3G/X9glZv8HAOyBuQNyBvQN6AvAF5g7yBdRqn1vpmcTJ3ROubeNt4J/veeeNpqlP/HKs3eDgH5A3IG5A3IG9A3iBvQN5AoMaptczd1Cqfe7+dyaYmwDLPh934K1i9wcM5IG9A3oC8AXkD8gbkDfIG1nmd5/npF2+cl8q85sx3rpja1WzjybN9d9LqDR7OAXkD8gbkDcgbkDfIG5A3EKg0tXYtc/epvmmqvpmnyudW7kbmr7DxfzX137B6g4dzQN6AvAF5A/IG5A3yBuQNBLrhXmtPm7Wyp93/MbV7nNUbkDfIG5A3IG9A3oC8AXmDvIGbOSovrszx9M0AbdxNLXNOq+9XmJql6/sVMmclrd7g4RyQNyBvQN6AvAF5g7wBeQOBSlNrT5u1mtoRLfP0yanPnbqqjbvHWb3Bwzkgb0DegLwBeQPyBnkD8gYCHX1vnXmi4sZJu8xJrL6d9jJ3Yutroe8/afUGD+eAvAF5A/IG5A3IG+QNyBsIdEx9cOaJipVrzpyXqtyrjbupTd2rzHe2eoOHc0DegLwBeQPyBuQN8gbkDQQ63IL3m9ohrG9Oq/LOUydm9u0t13cnpyb8rN7g4RyQNyBvQN6AvAF5g7wBeQOBTK19QOYuX1PzUk875TPznFarN3g4B+QNyBuQNyBvQN6AvEHewDqv8zw//eKNJ2ZunD2a+r5TU3pT7ne2rNUbPJwD8gbkDcgbkDcgb5A3IG8gUONea/ebeZr6RhvPteybluubtMs8t9Rea4C8Qd6AvAF5A/IG5A3IG+QN3ExprzXA6g3IG5A3IG+QNyBvQN6AvAF5A/IG5A3yBuQNyBuQNyBvQN4gb0DeQKi//NFUtdzWiY8AAAAASUVORK5CYII="><span class="qr-cap">thegraph.com/studio</span></div></div>
+      </div>
+      <div>
+        <div class="cd" data-cd>12:00</div>
+        <div class="cd-row"><span class="cd-lab">build time</span><button class="cd-reset" data-reset type="button">reset</button></div>
+        <div class="hop j" style="margin-top:22px">{ builders(orderBy: updatedAt) { name token badge } }</div>
+      </div>
+    </div>
+  </div>
+  <template class="note">
+    <p class="say"><strong>Tu deploya o subgraph antes. Eles não instalam nada.</strong> Um subgraph só, no teu <span class="mono">UFSCBuilders</span>, já contém a sala inteira — cada aluno acha o próprio nome nele.</p>
+    <p>Instalar node + pnpm + graph-cli em 30 máquinas era o bloco mais arriscado da aula. Assim vira navegador puro, e o fonte está no repo pra refazerem sábado.</p>
+    <p><strong>Ordem de hoje, e importa:</strong> deploya o UFSCBuilders → anota o bloco (<span class="mono">broadcast/…/run-latest.json</span>) → põe address e startBlock no <span class="mono">subgraph.yaml</span> → <span class="mono">make abi</span> → <span class="mono">graph auth</span> e <span class="mono">graph deploy</span> → <strong>registra uma entrada de teste</strong>, senão o playground volta vazio e parece quebrado.</p>
+    <p><span class="mono">startBlock: 0</span> reprocessa desde o gênesis — horas na Sepolia. E um mapping que lança exceção <strong>para de indexar tudo</strong>, não pula o evento ruim.</p>
+    <p><strong>Momento bom:</strong> deixa o telão do lado. Mesmo dado por dois caminhos — <span class="mono">eth_call</span> instantâneo e sem histórico, subgraph com atraso e consultável. É a explicação de por que indexer existe, sem slide.</p>
+  </template>
+</section>
+
+<section class="slide" data-at="71" data-block="08 Scripts" data-title="8 · Ordem dos comandos">
+  <div class="wrap">
+    <h2>In this order.</h2>
+    <ol class="steps cmd">
+      <li><span class="mono">git clone …</span> <span class="dim">· then cd into it</span></li>
+      <li><span class="mono">make install</span> <span class="dim">· forge-std + OpenZeppelin. once.</span></li>
+      <li><span class="mono">make build</span></li>
+      <li><span class="mono">make test</span> <span class="dim">· 12 tests, 2 of them fuzzed</span></li>
+      <li><span class="mono">make deploy</span> <span class="dim">· NETWORK=sepolia</span></li>
+      <li><span class="mono">make abi</span> <span class="dim">· regenerate the subgraph ABI from the build</span></li>
+      <li><span class="mono">make subgraph</span> <span class="dim">· codegen + build</span></li>
+    </ol>
+    <p class="fns" style="margin-top:clamp(16px,2.4vh,28px)"><span class="dim">anytime:</span> make fmt · make cov · make chisel · make slither</p>
+    <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://github.com/kamikazebr/ufsc-builders" target="_blank" rel="noopener"><img class="qr" alt="QR for https://github.com/kamikazebr/ufsc-builders" data-qr="https://github.com/kamikazebr/ufsc-builders" src="data:image/png;base64,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"></a><a class="qr-cap" href="https://github.com/kamikazebr/ufsc-builders" target="_blank" rel="noopener">github.com/kamikazebr/ufsc-builders</a></div></div>
+  </div>
+  <template class="note">
+    <p><span class="mono">make help</span> lista tudo com a descrição. É o primeiro comando a dar se alguém se perder.</p>
+    <p>Por que Makefile: <strong>os comandos que tu roda às 2h da manhã são os mesmos que o CI roda</strong>, e nenhum dos dois precisa lembrar de flag.</p>
+    <p><span class="mono">config/networks.json</span> + <span class="mono">NETWORK=sepolia make deploy</span>. Endereço fixo em script funciona exatamente uma vez — na segunda chain tu edita Solidity pra trocar constante, e é assim que se deploya em mainnet com endereço de testnet dentro. Resumido do gardens-v2, que faz isso em seis redes.</p>
+    <p><strong>Só teus:</strong> <span class="mono">make addresses</span> e <span class="mono">make fund</span>. Não mostra pra eles, é o que funda a sala.</p>
+    <p><strong>QR:</strong> troca a URL do repo e roda <span class="mono">make-qr.py</span> de novo.</p>
+    <p>Deixa o telão do lado desta tela. A última coisa que eles veem é a sala lendo os próprios nomes.</p>
+  </template>
+</section>
+
+</main>
+
+<div class="hud">
+  <span id="blk"></span>
+  <span id="lean">LEAN</span>
+  <span id="clock" class="off">--:--</span>
+  <span id="clockreset" title="reset the class clock">⟲</span>
+  <span><span class="cur" id="cur">1</span> / <span id="tot">0</span></span>
+</div>
+
+<div class="overlay" id="ov"><div class="ov-grid" id="ovGrid"></div></div>
+
+<div class="overlay" id="help">
+  <div style="max-width:900px;margin:0 auto">
+    <h2>Keyboard</h2>
+    <div class="keys">
+      <div><kbd>→</kbd> <kbd>Space</kbd> next slide</div>
+      <div><kbd>←</kbd> previous slide</div>
+      <div><kbd>Home</kbd> <kbd>End</kbd> first / last</div>
+      <div><kbd>O</kbd> overview grid</div>
+      <div><kbd>N</kbd> or <b>tap “notes”</b> — presenter notes</div>
+      <div><kbd>S</kbd> or <b>tap the countdown</b> — start / pause the round</div>
+      <div><kbd>T</kbd> or <b>tap the clock</b> — start / pause the class clock</div>
+      <div><kbd>L</kbd> lean mode — skip the Remix duplicates</div>
+      <div><kbd>T</kbd> start / pause the 60-min clock</div>
+      <div><kbd>R</kbd> or <b>tap ⟲</b> — reset the class clock</div>
+      <div><kbd>F</kbd> fullscreen</div>
+      <div><kbd>?</kbd> this panel</div>
+      <div><kbd>Esc</kbd> close any panel</div>
+    </div>
+    <p class="sub">The clock turns <span style="color:var(--warn)">amber</span> when you are behind the pace this deck is timed to. Each slide carries its own target minute. Slides marked <span style="color:var(--warn)">OPTIONAL</span> in the overview are the ones to cut first.</p>
+    <p class="sub"><strong>Lean mode</strong> (<kbd>L</kbd>) skips the eleven slides whose code will already be open in Remix — 40 slides becomes 29. They stay reachable from the overview, so they double as your offline fallback if the projector or the wifi dies.</p>
+  </div>
+</div>
+
+<button id="notesbtn" type="button" title="presenter notes">notes</button>
+<div class="notes" id="notes"><h4>Presenter notes</h4><div id="notesBody"></div></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var i = 0;
+
+  /* ---------- syntax highlighting ---------- */
+  var RULES = [
+    { re: /\/\/[^\n]*/g,                                cls: 't-com' },
+    { re: /#[^\n]*/g,                                   cls: 't-com' },
+    { re: /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g,       cls: 't-str' },
+    { re: /\b(pragma|solidity|contract|interface|library|function|constructor|returns|return|public|private|internal|external|view|pure|payable|memory|storage|calldata|event|emit|import|is|new|mapping|indexed|override|virtual|require|revert|if|else|for|while|await|const|let|var)\b/g, cls: 't-key' },
+    { re: /\b(uint256|uint8|uint|int256|int|address|bool|string|bytes32|bytes|Strings|Base64|ERC20|ERC721|ERC721URIStorage|Ownable|IERC20|IERC721)\b/g, cls: 't-typ' },
+    { re: /\b0x[0-9a-fA-F]+\b|\b\d[\d_]*(?:e\d+)?\b/g,  cls: 't-num' }
+  ];
+
+  function esc(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function highlight(line) {
+    var best, out = '', pos = 0;
+    while (pos < line.length) {
+      best = null;
+      for (var r = 0; r < RULES.length; r++) {
+        RULES[r].re.lastIndex = pos;
+        var m = RULES[r].re.exec(line);
+        if (!m || !m[0].length) continue;
+        if (!best || m.index < best.index) best = { index: m.index, text: m[0], cls: RULES[r].cls };
+      }
+      if (!best) { out += esc(line.slice(pos)); break; }
+      out += esc(line.slice(pos, best.index));
+      out += '<span class="' + best.cls + '">' + esc(best.text) + '</span>';
+      pos = best.index + best.text.length;
+    }
+    return out;
+  }
+
+  function parseSet(attr) {
+    var set = {};
+    if (!attr) return set;
+    attr.split(',').forEach(function (n) { set[parseInt(n, 10)] = true; });
+    return set;
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.code pre'), function (pre) {
+    var marked = parseSet(pre.getAttribute('data-mark'));
+    var goods  = parseSet(pre.getAttribute('data-good'));
+    var lines  = pre.textContent.replace(/\s+$/, '').split('\n');
+    var html   = '';
+    lines.forEach(function (line, idx) {
+      var cls = 'ln' + (marked[idx + 1] ? ' mark' : '') + (goods[idx + 1] ? ' good' : '');
+      html += '<span class="' + cls + '"><span class="n">' + (idx + 1) + '</span>' +
+              (line.length ? highlight(line) : ' ') + '</span>';
+    });
+    pre.innerHTML = html;
+  });
+
+  /* ---------- navigation ---------- */
+  var cur = document.getElementById('cur');
+  var tot = document.getElementById('tot');
+  var blk = document.getElementById('blk');
+  var prog = document.getElementById('prog');
+  var notesBody = document.getElementById('notesBody');
+  tot.textContent = slides.length;
+
+  var lean = false;
+
+  function show(n, dir) {
+    n = Math.max(0, Math.min(slides.length - 1, n));
+    if (lean && dir) {
+      while (n > 0 && n < slides.length - 1 && slides[n].hasAttribute('data-remix')) n += dir;
+      if (slides[n].hasAttribute('data-remix')) {           // ran off an end
+        while (n > 0 && n < slides.length - 1 && slides[n].hasAttribute('data-remix')) n -= dir;
+      }
+    }
+    i = n;
+    slides.forEach(function (s, k) { s.classList.toggle('is-on', k === i); });
+    cur.textContent = i + 1;
+    blk.textContent = slides[i].getAttribute('data-block') || '';
+    prog.style.height = ((i + 1) / slides.length * 100) + '%';
+    var tpl = slides[i].querySelector('template.note');
+    notesBody.innerHTML = tpl ? tpl.innerHTML : '<p class="dim">No notes for this slide.</p>';
+    if (location.hash !== '#' + (i + 1)) history.replaceState(null, '', '#' + (i + 1));
+    slides[i].scrollTop = 0;
+    paintCd();
+    tick();
+    buildOverview();
+  }
+
+  /* ---------- the 60-minute clock ---------- */
+  var t0 = null, paused = 0, pausedAt = null;
+  var clock = document.getElementById('clock');
+
+  function elapsedMin() {
+    if (t0 === null) return null;
+    var end = pausedAt !== null ? pausedAt : Date.now();
+    return (end - t0 - paused) / 60000;
+  }
+
+  function tick() {
+    var e = elapsedMin();
+    if (e === null) { clock.textContent = '--:--'; clock.className = 'off'; return; }
+    var m = Math.floor(e), s = Math.floor((e - m) * 60);
+    clock.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+    var target = parseFloat(slides[i].getAttribute('data-at') || '0');
+    var behind = e - target > 2.5;
+    clock.className = pausedAt !== null ? 'off' : (behind ? 'late' : 'run');
+  }
+  setInterval(tick, 1000);
+
+  function toggleClock() {
+    if (t0 === null) { t0 = Date.now(); pausedAt = null; }
+    else if (pausedAt === null) { pausedAt = Date.now(); }
+    else { paused += Date.now() - pausedAt; pausedAt = null; }
+    tick();
+  }
+
+  /* ---------- per-slide build countdown ---------- */
+  var cds = {};
+  slides.forEach(function (sl, k) {
+    var m = parseFloat(sl.getAttribute('data-timer') || '0');
+    if (m) cds[k] = { left: m * 60, full: m * 60, running: false };
+  });
+
+  function fmt(sec) {
+    var m = Math.floor(sec / 60), s2 = sec % 60;
+    return (m < 10 ? '0' : '') + m + ':' + (s2 < 10 ? '0' : '') + s2;
+  }
+
+  function paintCd() {
+    var st = cds[i], el = slides[i].querySelector('[data-cd]');
+    if (!st || !el) return;
+
+    var left = Math.round(st.left);
+    var over = left < 0;
+
+    // Past zero it counts UP, in red. A frozen 00:00 tells you nothing;
+    // "+03:12" tells you exactly how far over you are, which is actionable.
+    el.textContent = over ? '+' + fmt(-left) : fmt(left);
+    el.className = 'cd' + (over ? ' out'
+      : !st.running ? ''
+      : left <= 180 ? ' warn' : ' run');
+
+    var lab = slides[i].querySelector('.cd-lab');
+    if (lab) {
+      lab.textContent = over ? 'over time'
+        : st.running ? 'building'
+        : left < st.full ? 'paused'
+        : 'build time';
+    }
+  }
+
+  setInterval(function () {
+    var st = cds[i];
+    if (st && st.running) { st.left -= 1; paintCd(); }
+  }, 1000);
+
+  /* ---------- overview ---------- */
+  var ov = document.getElementById('ov');
+  var ovGrid = document.getElementById('ovGrid');
+
+  function buildOverview() {
+    if (!ov.classList.contains('on')) return;
+    ovGrid.innerHTML = '';
+    slides.forEach(function (s, k) {
+      var b = document.createElement('button');
+      b.className = 'ov-card' + (k === i ? ' here' : '') + (s.getAttribute('data-opt') ? ' opt' : '')
+                  + (lean && s.hasAttribute('data-remix') ? ' skip' : '');
+      b.innerHTML = '<b>' + (k + 1) + ' · ' + (s.getAttribute('data-at') || 0) + ' MIN' +
+                    (s.getAttribute('data-opt') ? ' · OPTIONAL' : '') + '</b>' +
+                    (s.getAttribute('data-title') || '');
+      b.addEventListener('click', function () { ov.classList.remove('on'); show(k); });
+      ovGrid.appendChild(b);
+    });
+  }
+
+  function closeAll() {
+    ov.classList.remove('on');
+    document.getElementById('help').classList.remove('on');
+  }
+
+  /* ---------- keys ---------- */
+  document.addEventListener('keydown', function (e) {
+    var k = e.key;
+    if (k === 'Escape') { closeAll(); return; }
+    if (k === 'ArrowRight' || k === ' ' || k === 'PageDown') { e.preventDefault(); show(i + 1, 1); }
+    else if (k === 'ArrowLeft' || k === 'PageUp') { e.preventDefault(); show(i - 1, -1); }
+    else if (k === 'Home') { show(0); }
+    else if (k === 'End') { show(slides.length - 1); }
+    else if (k === 'o' || k === 'O') { closeAll(); ov.classList.toggle('on'); buildOverview(); }
+    else if (k === 'n' || k === 'N') { document.getElementById('notes').classList.toggle('on'); }
+    else if (k === 't' || k === 'T') { toggleClock(); }
+    else if (k === 's' || k === 'S') {
+      if (cds[i]) { cds[i].running = !cds[i].running; paintCd(); }
+    }
+    else if (k === 'a' || k === 'A') { slides[i].classList.toggle('revealed'); }
+    else if (k === 'l' || k === 'L') {
+      lean = !lean;
+      document.body.classList.toggle('lean', lean);
+      buildOverview(); tick();
+    }
+    else if (k === 'r' || k === 'R') { t0 = null; paused = 0; pausedAt = null; tick(); }
+    else if (k === 'f' || k === 'F') {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+    }
+    else if (k === '?' || k === '/') {
+      closeAll(); document.getElementById('help').classList.toggle('on');
+    }
+  });
+
+  // There is no keyboard on a phone, so every timer control has to be tappable.
+  // Bound directly to each element rather than delegated: a delegated handler
+  // competes with the slide-advance handler and the ordering is easy to get
+  // wrong. Direct binding + stopPropagation is unambiguous.
+  function bind(el, fn) {
+    if (!el) return;
+    el.addEventListener('click', function (e) {
+      e.stopPropagation();
+      e.preventDefault();
+      fn();
+    });
+  }
+
+  slides.forEach(function (sl, k) {
+    bind(sl.querySelector('[data-cd]'),   function () { if (cds[k]) { cds[k].running = !cds[k].running; paintCd(); } });
+    bind(sl.querySelector('.cd-lab'),     function () { if (cds[k]) { cds[k].running = !cds[k].running; paintCd(); } });
+    bind(sl.querySelector('[data-reset]'),function () { if (cds[k]) { cds[k].left = cds[k].full; cds[k].running = false; paintCd(); } });
+  });
+
+  bind(document.getElementById('notesbtn'), function () {
+    var on = document.getElementById('notes').classList.toggle('on');
+    document.body.classList.toggle('notesopen', on);
+  });
+
+  bind(document.getElementById('clock'), toggleClock);
+  bind(document.getElementById('clockreset'), function () {
+    t0 = null; paused = 0; pausedAt = null; tick();
+  });
+
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('.ov-card') || e.target.closest('a') || e.target.closest('.notes')) return;
+    if (e.target.closest('[data-cd], .cd-lab, .cd-reset, #clock, #clockreset, #notesbtn')) return;
+    if (ov.classList.contains('on') || document.getElementById('help').classList.contains('on')) {
+      closeAll(); return;
+    }
+    var d = e.clientX < window.innerWidth * 0.28 ? -1 : 1; show(i + d, d);
+  });
+
+  var startAt = parseInt((location.hash || '').slice(1), 10);
+  show(isNaN(startAt) ? 0 : startAt - 1);
+})();
+</script>

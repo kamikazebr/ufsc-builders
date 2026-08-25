@@ -18,6 +18,11 @@ own. See [docs/remix.md](docs/remix.md).
 
 This is the path for the session. It works on any laptop.
 
+### Codespaces — the real toolchain, still nothing installed
+
+On GitHub: `Code` → `Codespaces` → *Create codespace*. Foundry, node, pnpm,
+graph-cli and slither, in a browser tab. See [docs/remix.md](docs/remix.md).
+
 ### Foundry — when it starts to matter
 
 ```bash
@@ -57,11 +62,31 @@ cast send $TOKEN "transfer(address,uint256)" $FRIEND 1ether \
 | `src/UFSCBuilders.sol` | The class registry. Forty lines, and every idea from the session is in it. You **call** this one — the instructor deployed it. |
 | `src/Token.sol` | Your ERC-20. OpenZeppelin, capped, owner-minted. |
 | `src/Badge.sol` | Your ERC-721. `tokenURI` returns a string and the chain does not care what is behind it. |
+| `src/Disperse.sol` | Fund a whole room in one transaction. Fifteen lines, and one of them was a real bug — see [SLITHER.md](SLITHER.md). |
 | `test/` | 10 tests. `testFuzz_*` are properties, not examples — Foundry generates the inputs and tries to break you. |
 | `subgraph/` | Ready to deploy. The ABI is generated from your own build, so it cannot drift. |
 | `.github/workflows/` | `forge test` and Slither on every push. |
 
-## The five pages
+## Everything else
+
+- **[LINKS.md](LINKS.md)** — every link from the session, in one page
+- **[slides/](slides/)** — the deck and the live board. Open `index.html`, no build step.
+- **[SLITHER.md](SLITHER.md)** — what the static analyser said, which finding was real, and the worse one it missed
+- **[CLAUDE.md](CLAUDE.md)** — read this first if you are pointing a coding agent at the repo
+
+## Bringing an agent to the hackathon
+
+Claude Code reads `CLAUDE.md` on its own, so it will already know this is Foundry
+and not Hardhat, that dependencies are submodules, and that `.env` never gets
+committed. Three skills ship in `.claude/skills/` — ask for one by name:
+
+| | |
+| --- | --- |
+| `hackathon-scope` | you have no idea yet, or an idea far too big for 48 hours |
+| `solidity-review` | you wrote a contract and want it torn apart before you ship it |
+| `ship-to-testnet` | deploy, verify, and end up with a link you can demo |
+
+## The pages
 
 - **[docs/remix.md](docs/remix.md)** — Remix, and honestly when to leave it for Foundry
 - **[docs/chisel.md](docs/chisel.md)** — the Solidity REPL. Five things worth knowing, including the `abi.encodePacked` collision
@@ -106,7 +131,7 @@ thing it does not have. So the instructor pushes instead of them pulling.
 
 ```bash
 make addresses            # pulls every 0x… out of raw.txt, lowercases, dedupes
-DISPERSE=0x… make drop    # 0.01 ETH each, in ONE transaction
+DISPERSE=0x… make drop    # 0.05 ETH each, in ONE transaction
 ```
 
 `make drop` deploys `src/Disperse.sol` the first time and prints its address —

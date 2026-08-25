@@ -1,5 +1,5 @@
 import { Bytes, BigInt } from "@graphprotocol/graph-ts";
-import { Registered, BadgeSet } from "../generated/UFSCBuilders/UFSCBuilders";
+import { Registered } from "../generated/UFSCBuilders/UFSCBuilders";
 import { Builder, Board } from "../generated/schema";
 
 const BOARD_ID = Bytes.fromUTF8("board");
@@ -24,20 +24,9 @@ export function handleRegistered(event: Registered): void {
     board.save();
   }
 
+  b.badgeId = event.params.tokenId;
   b.name = event.params.name;
   b.token = event.params.token;
-  b.updatedAt = event.block.timestamp;
-  b.writes = b.writes.plus(BigInt.fromI32(1));
-  b.save();
-}
-
-export function handleBadgeSet(event: BadgeSet): void {
-  // setBadge reverts if you never registered, so the Builder must exist.
-  // Still: never assume. An indexer that throws stops indexing everything.
-  let b = Builder.load(event.params.who);
-  if (b == null) return;
-
-  b.badge = event.params.badge;
   b.updatedAt = event.block.timestamp;
   b.writes = b.writes.plus(BigInt.fromI32(1));
   b.save();

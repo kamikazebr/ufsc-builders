@@ -98,8 +98,9 @@ It asks for a version label — `v0.0.1` is fine, and it is only a label.
 
 ### 5. Dev endpoint vs publishing
 
-The Studio query URL is rate-limited and meant for development. It is entirely
-enough for a hackathon demo.
+The free plan gives you **100,000 queries a month** and **3 deployed subgraphs**,
+renewing monthly. That is entirely enough for a hackathon demo — you will not get
+close.
 
 *Publishing* to the decentralized network is a separate, paid step involving GRT
 and curation signal. You do not need it this weekend, and nobody will ask.
@@ -130,3 +131,34 @@ demo?" is "my laptop".
 The indexer can only see what you **emit**. A contract that forgets its events is
 invisible — to wallets, to explorers, and to this. Events are not logging. They
 are the read API.
+
+---
+
+## Asking a subgraph questions without writing GraphQL
+
+The Graph ships an **official MCP server**, so an agent can find a subgraph by
+contract address, read its schema, and query it in plain language. Remote, so
+there is nothing to install:
+
+```bash
+claude mcp add --transport sse subgraph \
+  https://subgraphs.mcp.thegraph.com/sse \
+  --header "Authorization: Bearer <GATEWAY_API_KEY>"
+```
+
+The key is a **Gateway API key**, from the *API Keys* tab in
+[Subgraph Studio](https://thegraph.com/studio) — the same place you deploy from,
+a different key from the deploy key.
+
+They also publish **Agent Skills** for writing, optimising and testing subgraphs.
+The MCP reads; the skills build.
+
+### The part worth saying out loud
+
+This is the whole argument in one tool. An agent will write you a subgraph faster
+than you can type one — and it will not tell you that `startBlock: 0` means
+replaying the chain from genesis, or that a mapping which throws stops indexing
+*everything* instead of skipping the bad event.
+
+Both of those cost you a night. Neither shows up as an error message. Use the
+tools, and know the layer underneath them.

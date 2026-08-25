@@ -8,7 +8,7 @@ NETWORK ?= sepolia
 DISPERSE ?= 0x0000000000000000000000000000000000000000
 RPC     ?= $(SEPOLIA_RPC_URL)
 
-.PHONY: help install build test fmt cov chisel deploy drop fund addresses slither abi subgraph clean
+.PHONY: help install build test fmt cov chisel deploy registry pin drop fund addresses slither abi subgraph clean
 
 help:            ## show this
 	@grep -E '^[a-z-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
@@ -48,7 +48,24 @@ deploy:          ## deploy Token + Badge   (NETWORK=sepolia make deploy)
 	NETWORK=$(NETWORK) forge script script/Deploy.s.sol \
 		--rpc-url $(RPC) --private-key $(PRIVATE_KEY) --broadcast --verify
 
+pin:             ## pin assets/badge.png to IPFS via Pinata, print the CID
+	@# Needs PINATA_JWT in .env. Free tier is 1 GB — see docs/pinata.md.
+	@test -n "$(PINATA_JWT)" || (echo "set PINATA_JWT in .env - see docs/pinata.md"; exit 1)
+	@curl -s -X POST https://uploads.pinata.cloud/v3/files \
+		-H "Authorization: Bearer $(PINATA_JWT)" \
+		-F "file=@assets/badge.png" -F "network=public" \
+		-F "name=ufsc-builders-badge.png" \
+		| grep -oE '"cid":"[^"]+"' | cut -d'"' -f4 \
+		| sed 's/^/BADGE_CID=/'
+	@echo "put that line in .env, then: make registry"
+
+registry:        ## deploy the class registry ONCE (instructor only, needs BADGE_CID)
+	NETWORK=$(NETWORK) forge script script/DeployRegistry.s.sol \
+		--rpc-url $(RPC) --private-key $(PRIVATE_KEY) --broadcast --verify
+
 addresses:       ## pull every 0x address out of script/raw.txt, dedupe, write addresses.txt
+	@# raw.txt and addresses.txt are gitignored — they hold other people's wallets.
+	@[ -f script/raw.txt ] || cp script/raw.txt.example script/raw.txt
 	@grep -oE '0[xX][a-fA-F0-9]{40}' script/raw.txt \
 		| tr 'A-FX' 'a-fx' | sort -u > script/addresses.txt
 	@echo "$$(wc -l < script/addresses.txt) unique addresses"
@@ -62,13 +79,16 @@ fund:            ## same, but as N separate transactions — no contract needed
 		--rpc-url $(RPC) --private-key $(PRIVATE_KEY) --broadcast
 
 slither:         ## static analysis in a container — findings triaged in SLITHER.md
-	@# --fail-on high: informational findings print but do not break the build.
+	@# --fail-high: informational findings print but do not break the build.
 	@# Every exclusion is justified in SLITHER.md — never silence one silently.
-	@# --user: without it the container runs as root and leaves root-owned
-	@# out/ and cache/ behind, and the next `forge build` dies with EACCES.
-	docker run --rm --user $$(id -u):$$(id -g) -v "$$PWD":/src \
+	@# The image keeps slither under /root (mode 700), so it has to run as root.
+	@# FOUNDRY_OUT/FOUNDRY_CACHE_PATH send the build artefacts to the container's
+	@# /tmp instead — without them root-owned out/ and cache/ land in your repo
+	@# and the next `forge build` dies with EACCES.
+	docker run --rm -v "$$PWD":/src -w /src \
+		-e FOUNDRY_OUT=/tmp/fout -e FOUNDRY_CACHE_PATH=/tmp/fcache \
 		trailofbits/eth-security-toolbox \
-		slither /src --exclude-dependencies --fail-on high
+		slither . --exclude-dependencies --fail-high
 
 subgraph:        ## codegen + build the subgraph
 	cd subgraph && pnpm install && pnpm codegen && pnpm build
