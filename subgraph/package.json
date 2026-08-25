@@ -1,0 +1,14 @@
+{
+  "name": "ufsc-builders-subgraph",
+  "private": true,
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy ufsc-builders --node https://api.studio.thegraph.com/deploy/",
+    "auth": "graph auth"
+  },
+  "devDependencies": {
+    "@graphprotocol/graph-cli": "^0.90.0",
+    "@graphprotocol/graph-ts": "^0.36.0"
+  }
+}

@@ -1,0 +1,24 @@
+# Same shape as 1Hive/gardens-v2 .github/workflows/contract-audit.yml
+name: security
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - uses: foundry-rs/foundry-toolchain@v1
+      - run: forge build --sizes
+      - run: forge test -vvv
+
+  slither:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - uses: crytic/slither-action@v0.4.0
+        with:
+          fail-on: high
+          slither-args: --exclude-dependencies

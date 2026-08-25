@@ -1,0 +1,8 @@
+Paste whatever you collected here — the Google Form's sheet column, header
+and timestamps included, or a chat log with names mixed in. It does not need
+cleaning up.
+
+  make addresses     pulls every 0x… (or 0X…), lowercases, dedupes
+  make drop          funds them all in ONE transaction
+
+0x0000000000000000000000000000000000000001

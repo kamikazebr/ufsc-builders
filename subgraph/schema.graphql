@@ -1,0 +1,17 @@
+type Builder @entity(immutable: false) {
+  "the wallet that registered — this is the identity, nothing else"
+  id: Bytes!
+  name: String!
+  token: Bytes!
+  "zero until they finish BUILD 2"
+  badge: Bytes
+  firstSeen: BigInt!
+  updatedAt: BigInt!
+  "how many times they changed their entry"
+  writes: BigInt!
+}
+
+type Board @entity(immutable: false) {
+  id: Bytes!
+  total: BigInt!
+}
