@@ -5,6 +5,7 @@
 export
 
 NETWORK ?= sepolia
+CHAIN_ID ?= 11155111
 
 # How to sign. Two ways, and the first one is better.
 #
@@ -41,7 +42,7 @@ WHO      := $(if $(ACCOUNT),keystore $(ACCOUNT) → $(SENDER)$(if $(PASSWORD_FIL
 DISPERSE ?= 0x0000000000000000000000000000000000000000
 RPC     ?= $(SEPOLIA_RPC_URL)
 
-.PHONY: wallet wallet-import wallet-use help setup install build test fmt cov chisel deploy registry pin verify drop fund addresses slither abi subgraph clean
+.PHONY: wallet wallet-import wallet-use help setup install register build test fmt cov chisel deploy registry pin verify drop fund addresses slither abi subgraph clean
 
 wallet:          ## list the keystores foundry knows about
 	@cast wallet list
@@ -161,6 +162,30 @@ verify:          ## verify the registry on Etherscan (needs ETHERSCAN_API_KEY)
 	@forge verify-contract $(UFSC_BUILDERS) src/UFSCBuilders.sol:UFSCBuilders \
 		--chain sepolia --etherscan-api-key $(ETHERSCAN_API_KEY) --watch \
 		--constructor-args $$(cast abi-encode "constructor(string)" "ipfs://$(BADGE_CID)")
+
+register:        ## put your name on the board   (make register NAME="your team")
+	@# TOKEN comes from your own deploy: forge writes the address into
+	@# broadcast/, so there is nothing to copy by hand. Pass TOKEN=0x… to
+	@# override, which is what you want if you deployed somewhere else.
+	@test -n "$(NAME)" || (echo 'usage: make register NAME="your team"'; exit 1)
+	@test -n "$(UFSC_BUILDERS)" || (echo "set UFSC_BUILDERS in .env"; exit 1)
+	@t="$(TOKEN)"; \
+	 if [ -z "$$t" ]; then \
+	   f="broadcast/Deploy.s.sol/$(CHAIN_ID)/run-latest.json"; \
+	   if [ -f "$$f" ]; then \
+	     if command -v jq >/dev/null 2>&1; then \
+	       t=$$(jq -r '[.transactions[] | select(.contractName=="Token") | .contractAddress] | last // empty' "$$f"); \
+	     else \
+	       t=$$(grep -A2 '"contractName": *"Token"' "$$f" | grep -oE '0[xX][0-9a-fA-F]{40}' | tail -1); \
+	     fi; \
+	   fi; \
+	 fi; \
+	 if [ -z "$$t" ]; then \
+	   echo "could not find your token. run make deploy first, or pass TOKEN=0x…"; exit 1; \
+	 fi; \
+	 echo "name  $(NAME)"; echo "token $$t"; \
+	 cast send $(UFSC_BUILDERS) "register(string,address)" "$(NAME)" "$$t" \
+	   --rpc-url $(RPC) $(SIGNER)
 
 addresses:       ## pull every 0x address out of script/raw.txt, dedupe, write addresses.txt
 	@# raw.txt and addresses.txt are gitignored — they hold other people's wallets.

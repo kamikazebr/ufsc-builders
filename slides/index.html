@@ -474,7 +474,10 @@ ol.steps li::before{content:counter(st);position:absolute;left:0;top:.1em;
 .qr{width:clamp(96px,11vw,168px);height:auto;border-radius:8px;
   background:#fff;padding:6px;display:block}
 a.qr-cap{font-family:var(--f-mono);font-size:clamp(10px,.8vw,12px);
-  letter-spacing:.1em;color:var(--ink-2);max-width:22ch;word-break:break-all;
+  letter-spacing:.1em;color:var(--ink-2);max-width:26ch;
+  /* anywhere, nao break-all: break-all parte qualquer palavra no meio
+     ("everyth/ing"); anywhere so quebra quando a palavra nao cabe. */
+  overflow-wrap:anywhere;
   text-decoration:none;border-bottom:1px solid transparent}
 a.qr-cap:hover,a.qr-cap:focus-visible{color:var(--accent);border-bottom-color:currentColor}
 .qr-item a.qr-img{display:block}
@@ -489,6 +492,40 @@ body.lean #lean{display:inline}
   .slide{transition:none}
   .rail-prog i{transition:none}
 }
+
+/* --- Presenter view: janela separada -------------------------------------
+   As notas viviam num overlay da própria página, então num projetor a sala
+   lia junto. Abrindo ?presenter=1 numa segunda janela, o deck fica no
+   projetor e as notas ficam na tela do apresentador. As duas conversam por
+   BroadcastChannel (mesma origem), com localStorage de reserva. */
+body.presenter main, body.presenter .hud, body.presenter #notesbtn,
+body.presenter .overlay, body.presenter #prog,
+body.presenter .rail, body.presenter .rail-mark,
+body.presenter .rail-prog { display:none !important }
+body.presenter { --rail: 0px }
+body.presenter { overflow:auto; background:var(--ground) }
+body.presenter .notes {
+  position:static; display:block; max-height:none; border-top:none;
+  left:0; right:0; padding:clamp(18px,3vh,32px) clamp(20px,4vw,52px);
+}
+#pbar{display:none}
+body.presenter #pbar{
+  display:flex;align-items:baseline;gap:clamp(10px,2vw,26px);flex-wrap:wrap;
+  padding:clamp(14px,2.4vh,24px) clamp(20px,4vw,52px) 0;
+  font-family:var(--f-mono);color:var(--ink-3);
+  font-size:clamp(11px,.86vw,13px);letter-spacing:.12em;text-transform:uppercase;
+}
+#pbar b{color:var(--ink);font-weight:500;letter-spacing:.04em;text-transform:none;
+  font-size:clamp(1rem,1.5vw,1.5rem);font-family:var(--f-display)}
+#pbar .nxt{color:var(--ink-2);text-transform:none;letter-spacing:.04em}
+#pbar .cd2{color:var(--ink-2);font-size:clamp(1.1rem,1.8vw,1.7rem);letter-spacing:.02em}
+#pbar .cd2.out{color:var(--bad)}
+#presbtn{position:fixed;left:calc(var(--rail) + 110px);bottom:14px;z-index:55;
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  background:var(--surface);color:var(--ink-3);border:1px solid var(--line);
+  border-radius:999px;padding:8px 16px;cursor:pointer}
+#presbtn:hover,#presbtn:focus-visible{color:var(--accent);border-color:var(--accent)}
+body.presenter #presbtn{display:none}
 </style>
 
 <div class="rail">
@@ -506,8 +543,8 @@ body.lean #lean{display:inline}
     <p class="sub"><span class="i18n" lang="en">Tonight you deploy.</span><span class="i18n" lang="pt">Hoje à noite tu deploya.</span></p>
   </div>
   <template class="note">
-    <p>Deploy o <span class="mono">Hello</span> ao vivo enquanto fala. Narra três coisas enquanto confirma: rede de teste, aquilo é gás, a carteira assinou.</p>
-    <p>34% não foi na Class 1. Esses 30 segundos são o contexto inteiro que eles têm.</p>
+    <p><strong>Não deploya nada aqui.</strong> O primeiro build é o Rabby, no slide seguinte, e são 10 minutos. Aqui é só quem tu é e o que eles vão sair tendo: Narra três coisas enquanto confirma: rede de teste, aquilo é gás, a carteira assinou.</p>
+    <p><strong>Metade nunca escreveu um contrato.</strong> Não pergunta quem já fez — pergunta quem tem carteira instalada. A resposta dessa muda o ritmo dos 10 minutos seguintes, e ninguém precisa levantar a mão pra dizer que não sabe.</p>
   </template>
 </section>
 
@@ -720,7 +757,7 @@ body.lean #lean{display:inline}
   </div>
   <template class="note">
     <p>V2 unificou tudo: uma chave para 60+ chains, passa o chain id. A V1 morreu em ago/2025 e responde erro — tutorial antigo com <span class="mono">api-sepolia.etherscan.io</span> está desatualizado.</p>
-    <p>Por que importa, e é a ligação com o passo 2: eles usam <span class="mono">At Address</span> no teu contrato porque ele está <strong>verificado</strong>. Verificar o deles é retribuir.</p>
+    <p>Por que importa, e é a ligação com o passo 2: no slide 7 eles vão chamar <span class="mono">register</span> pela aba <span class="mono">Write Contract</span> do teu contrato — que só existe porque ele está <strong>verificado</strong>. Verificar o deles é retribuir.</p>
     <p>Constructor args é onde a verificação falha em 90% dos casos. <span class="mono">docs/verify.md</span>.</p>
   </template>
 </section>
@@ -752,7 +789,7 @@ body.lean #lean{display:inline}
     <p><strong>Faucet não escala pra 30 pessoas e contrato de faucet não resolve</strong> — pra chamar precisa de gás, que é justamente o que falta. Tu empurra.</p>
     <p>Copia a coluna da planilha para <span class="mono">script/raw.txt</span> (com cabeçalho, timestamp, do jeito que vier), e depois:</p>
     <p class="say"><span class="mono">make addresses &amp;&amp; make drop</span></p>
-    <p>O <span class="mono">make addresses</span> extrai todo <span class="mono">0x…</span> de texto bagunçado, minúsculo, sem duplicata. Não precisa limpar nada. O <span class="mono">fund</span> manda 0.01 pra cada um numa transação e pula quem já tem saldo.</p>
+    <p>O <span class="mono">make addresses</span> extrai todo <span class="mono">0x…</span> de texto bagunçado, minúsculo, sem duplicata, e ignora hash de transação. Não precisa limpar nada. O <span class="mono">make drop</span> manda <strong>0,05</strong> pra cada um numa transação só e pula quem já tem saldo — dá pra rodar de novo sem pagar ninguém duas vezes.</p>
     <p><strong>Quanto mandar: 0,05 por aluno, 1,5 no total.</strong> Medido, não chutado — um aluno fazendo tudo (deploy do ERC-20, register+NFT, 10 mints, 10 transfers, 5 approves) queima ~1,9M de gás. 0,05 cobre isso até ~25 gwei, muito acima do normal da Sepolia.</p>
     <p><strong>Melhor ainda: manda a planilha antes e funda com a sala ainda chegando.</strong> Aí esse bloco cai pra 3 minutos e vira só o deploy.</p>
   </template>
@@ -835,14 +872,16 @@ body.lean #lean{display:inline}
           <li><span class="mono">make build</span></li>
           <li><span class="mono">make test</span> <span class="i18n" lang="en"><span class="dim">· 21 tests, three of them fuzzed</span></span><span class="i18n" lang="pt"><span class="dim">· 21 testes, três deles com fuzz</span></span></li>
           <li><span class="mono">make deploy</span> <span class="dim">· NETWORK=sepolia</span></li>
-          <li><span class="mono">make abi</span> <span class="i18n" lang="en"><span class="dim">· regenerate the subgraph ABI from the build</span></span><span class="i18n" lang="pt"><span class="dim">· regenera a ABI do subgraph a partir do build</span></span></li>
-          <li><span class="mono">make subgraph</span> <span class="dim">· codegen + build</span></li>
+          <li><span class="mono">make register NAME="…"</span> <span class="dim"><span class="i18n" lang="en">· finds your token in broadcast/ — nothing to copy</span><span class="i18n" lang="pt">· acha teu token no broadcast/ — nada pra copiar</span></span></li>
         </ol>
-    <p class="fns" style="margin-top:clamp(10px,1.4vh,18px)"><span class="mono">setup</span> <span class="dim">&rarr;</span> <span class="mono">foundryup</span><span class="dim">:</span> <span class="mono">forge</span> <span class="dim">·</span> <span class="mono">cast</span> <span class="dim">·</span> <span class="mono">anvil</span> <span class="dim">·</span> <span class="mono">chisel</span><span class="dim">. <span class="i18n" lang="en">node, pnpm, docker are only checked.</span><span class="i18n" lang="pt">node, pnpm, docker só são conferidos.</span></span></p>
-    <p class="fns" style="margin-top:clamp(16px,2.4vh,28px)"><span class="i18n" lang="en"><span class="dim">anytime:</span></span><span class="i18n" lang="pt"><span class="dim">a qualquer hora:</span></span> make fmt · make cov · make chisel · make slither</p>
+    <p class="fns" style="margin-top:clamp(6px,.9vh,11px)"><span class="dim"><span class="i18n" lang="en">subgraph:</span><span class="i18n" lang="pt">subgraph:</span></span> <span class="mono">make abi</span> <span class="dim">&rarr;</span> <span class="mono">make subgraph</span> <span class="dim"><span class="i18n" lang="en">· regenerates the ABI from the build, then codegen</span><span class="i18n" lang="pt">· regenera a ABI a partir do build, depois codegen</span></span></p>
+    <p class="fns" style="margin-top:clamp(6px,.9vh,11px)"><span class="mono">setup</span> <span class="dim">&rarr;</span> <span class="mono">foundryup</span><span class="dim">:</span> <span class="mono">forge</span> <span class="dim">·</span> <span class="mono">cast</span> <span class="dim">·</span> <span class="mono">anvil</span> <span class="dim">·</span> <span class="mono">chisel</span><span class="dim">. <span class="i18n" lang="en">node, pnpm, docker are only checked.</span><span class="i18n" lang="pt">node, pnpm, docker só são conferidos.</span></span></p>
+    <p class="fns" style="margin-top:clamp(8px,1.2vh,16px)"><span class="i18n" lang="en"><span class="dim">anytime:</span></span><span class="i18n" lang="pt"><span class="dim">a qualquer hora:</span></span> make fmt · make cov · make chisel · make slither</p>
     <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://github.com/kamikazebr/ufsc-builders" target="_blank" rel="noopener"><img class="qr" alt="QR for https://github.com/kamikazebr/ufsc-builders" data-qr="https://github.com/kamikazebr/ufsc-builders" src="data:image/png;base64,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"></a><a class="qr-cap" href="https://github.com/kamikazebr/ufsc-builders" target="_blank" rel="noopener">github.com/kamikazebr/ufsc-builders</a></div></div>
   </div>
   <template class="note">
+    <p><strong>O <span class="mono">make register</span> não pede o endereço do token.</strong> O forge grava o deploy em <span class="mono">broadcast/</span>, então ele lê de lá. Quem deployou em outro lugar passa <span class="mono">TOKEN=0x…</span>. É o mesmo <span class="mono">register</span> do slide 7, pra quem prefere terminal.</p>
+
     <p><strong>O que o <span class="mono">make setup</span> faz, se perguntarem:</strong> ele roda o instalador oficial do Foundry (<span class="mono">curl -L foundry.paradigm.xyz | bash</span>) e o <span class="mono">foundryup</span>. Escreve só em <span class="mono">~/.foundry</span>. Se o <span class="mono">forge</span> já existir, ele nem baixa — só confere e segue.</p>
     <p><strong>Vale dizer em voz alta que é um <span class="mono">curl | bash</span>.</strong> É o instalador oficial e todo mundo usa, mas o hábito de olhar o que se está executando vale mais que o comando. Quem quiser: <span class="mono">curl -L foundry.paradigm.xyz | less</span> antes.</p>
     <p><strong>node, pnpm e docker ele NÃO instala</strong> — só reporta. Instalar node direito muda por sistema operacional, e errar isso na frente da sala custa mais que dizer "falta". E os três são opcionais: só o subgraph precisa de node/pnpm, só o slither precisa de docker.</p>
@@ -891,8 +930,12 @@ body.lean #lean{display:inline}
     <p class="fns" style="margin-top:clamp(14px,2vh,22px)"><span class="i18n" lang="en"><span class="dim">and a tool for understanding keys:</span></span><span class="i18n" lang="pt"><span class="dim">e uma ferramenta pra entender chave:</span></span> <a href="https://iancoleman.io/bip39/" target="_blank" rel="noopener">iancoleman.io/bip39</a> <span class="i18n" lang="en"><span class="dim">· seed → private key → address, step by step. Use it offline, with a made-up seed — never your own.</span></span><span class="i18n" lang="pt"><span class="dim">· seed → chave privada → endereço, passo a passo. Use offline, com seed inventada — nunca com a tua.</span></span></p>
     <p class="done"><b><span class="i18n" lang="en">In the repo</span><span class="i18n" lang="pt">No repo</span></b><span class="i18n" lang="en">LINKS.md has every one of them, plus the hackathon links.</span><span class="i18n" lang="pt">LINKS.md tem todos, e mais os do hackathon.</span></p>
     <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://github.com/kamikazebr/ufsc-builders/blob/main/LINKS.md" target="_blank" rel="noopener"><img class="qr" alt="QR" data-qr="https://github.com/kamikazebr/ufsc-builders/blob/main/LINKS.md" src="data:image/png;base64,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"></a><a class="qr-cap" href="https://github.com/kamikazebr/ufsc-builders/blob/main/LINKS.md" target="_blank" rel="noopener"><span class="i18n" lang="en">LINKS.md — everything in one place</span><span class="i18n" lang="pt">LINKS.md — tudo num lugar</span></a></div></div>
+    <p class="fns" style="margin-top:clamp(14px,2vh,24px)"><a href="board.html" target="_blank" rel="noopener"><span class="i18n" lang="en">the board</span><span class="i18n" lang="pt">o telão</span></a> <span class="dim">·</span> <a href="https://sepolia.etherscan.io/address/0xaD08C29Aa13a01Ef33533398cf8bAA9eFEeAc360" target="_blank" rel="noopener"><span class="i18n" lang="en">the registry</span><span class="i18n" lang="pt">o registry</span></a> <span class="dim">·</span> <a href="https://api.studio.thegraph.com/query/1758157/ufscbuilder/v0.0.1/graphql" target="_blank" rel="noopener"><span class="i18n" lang="en">the subgraph</span><span class="i18n" lang="pt">o subgraph</span></a><span class="dim"> — <span class="i18n" lang="en">all of it stays up after tonight</span><span class="i18n" lang="pt">tudo isso continua no ar depois de hoje</span></span></p>
   </div>
   <template class="note">
+    <p><strong>Fecha no telão, não nesta lista.</strong> Depois de apontar o QR, volta pro <span class="mono">board.html</span> e deixa ele na tela enquanto eles saem. A última coisa que vão ver é a sala inteira com os próprios nomes — e o número do badge de cada um.</p>
+    <p>Vale dizer que <strong>nada disso é apagado amanhã</strong>: o contrato fica na Sepolia, o subgraph continua indexando, e o badge é deles. É a diferença entre exercício de aula e coisa que existe.</p>
+
     <p><strong>iancoleman.io/bip39:</strong> abre e gera uma seed nova na frente deles. Dá pra ver a mesma seed virando endereço do Ethereum, do Bitcoin, e a derivação <span class="mono">m/44'/60'/0'/0/0</span> — o "account 1, account 2" do Rabby deixa de ser mágica.</p>
     <p>E é a melhor forma de ensinar a regra sem sermão: <strong>é um site que transforma seed em chave.</strong> Se ele fosse malicioso, ou se alguém clonasse o domínio, quem colou a seed real perdeu tudo. Por isso: offline, seed de brinquedo, sempre. Chave privada expõe um endereço; seed expõe todos, em toda chain.</p>
     <p><strong>Não leia a lista.</strong> Diz que existe, aponta o QR e segue. Eles fotografam.</p>
@@ -942,6 +985,8 @@ body.lean #lean{display:inline}
   </div>
 </div>
 
+<div id="pbar"><b id="pNow"></b><span id="pNum"></span><span class="cd2" id="pCd"></span><span class="nxt" id="pNext"></span></div>
+<button id="presbtn" type="button" title="notas numa janela separada (V)">presenter</button>
 <button id="notesbtn" type="button" title="presenter notes"><span class="i18n" lang="en">notes</span><span class="i18n" lang="pt">notas</span></button>
 <div class="notes" id="notes"><h4><span class="i18n" lang="en">Presenter notes</span><span class="i18n" lang="pt">Notas do apresentador</span></h4><div id="notesBody"></div></div>
 
@@ -1065,6 +1110,63 @@ body.lean #lean{display:inline}
 
   var lean = false;
 
+
+  /* --- presenter view ------------------------------------------------- */
+  var IS_PRES = /[?&]presenter=1/.test(location.search);
+  var CHAN = (function () {
+    try { return new BroadcastChannel('ufsc-deck'); } catch (e) { return null; }
+  })();
+
+  function broadcast(i) {
+    if (IS_PRES) return;                       // só o deck manda
+    var msg = { i: i, t: Date.now() };
+    if (CHAN) CHAN.postMessage(msg);
+    try { localStorage.setItem('ufsc.slide', JSON.stringify(msg)); } catch (e) {}
+  }
+
+  function paintPresenter(i) {
+    if (!IS_PRES || i == null || !slides[i]) return;
+    var tpl  = slides[i].querySelector('template.note');
+    notesBody.innerHTML = tpl ? tpl.innerHTML : NONOTES[lang];
+    var nxt  = slides[i + 1];
+    document.getElementById('pNow').textContent  = slides[i].getAttribute('data-title') || '';
+    document.getElementById('pNum').textContent  = (i + 1) + ' / ' + slides.length;
+    document.getElementById('pNext').textContent = nxt
+      ? (lang === 'pt' ? 'próximo: ' : 'next: ') + (nxt.getAttribute('data-title') || '')
+      : (lang === 'pt' ? 'último slide' : 'last slide');
+    var t = slides[i].getAttribute('data-timer');
+    document.getElementById('pCd').textContent = t ? t + ':00' : '';
+    document.title = (i + 1) + '/' + slides.length + ' · ' + (slides[i].getAttribute('data-title') || '');
+  }
+
+  if (IS_PRES) {
+    document.body.classList.add('presenter');
+    document.getElementById('notes').classList.add('on');
+    if (CHAN) CHAN.onmessage = function (e) { paintPresenter(e.data && e.data.i); };
+    window.addEventListener('storage', function (e) {
+      if (e.key === 'ufsc.slide' && e.newValue) {
+        try { paintPresenter(JSON.parse(e.newValue).i); } catch (err) {}
+      }
+    });
+    // Estado inicial: o que o deck deixou gravado, senão o hash da própria URL.
+    // Sem isso a janela abre em branco até o apresentador virar um slide.
+    var start = null;
+    try {
+      var last = JSON.parse(localStorage.getItem('ufsc.slide') || 'null');
+      if (last && typeof last.i === 'number') start = last.i;
+    } catch (e) {}
+    if (start === null) {
+      var h = parseInt((location.hash || '').slice(1), 10);
+      start = (h >= 1 && h <= slides.length) ? h - 1 : 0;
+    }
+    paintPresenter(start);
+  }
+
+  function openPresenter() {
+    var u = location.pathname + '?presenter=1' + location.hash;
+    window.open(u, 'ufsc-presenter', 'width=980,height=860');
+  }
+
   function show(n, dir) {
     n = Math.max(0, Math.min(slides.length - 1, n));
     if (lean && dir) {
@@ -1085,6 +1187,7 @@ body.lean #lean{display:inline}
     paintCd();
     tick();
     buildOverview();
+    broadcast(i);
   }
 
   /* ---------- the 60-minute clock ---------- */
@@ -1188,6 +1291,7 @@ body.lean #lean{display:inline}
     else if (k === 'Home') { show(0); }
     else if (k === 'End') { show(slides.length - 1); }
     else if (k === 'o' || k === 'O') { closeAll(); ov.classList.toggle('on'); buildOverview(); }
+    else if (k === 'v' || k === 'V') { openPresenter(); }
     else if (k === 'n' || k === 'N') { document.getElementById('notes').classList.toggle('on'); }
     else if (k === 't' || k === 'T') { toggleClock(); }
     else if (k === 's' || k === 'S') {
@@ -1230,6 +1334,7 @@ body.lean #lean{display:inline}
     bind(sl.querySelector('[data-reset]'),function () { if (cds[k]) { cds[k].left = cds[k].full; cds[k].running = false; paintCd(); } });
   });
 
+  bind(document.getElementById('presbtn'), openPresenter);
   bind(document.getElementById('notesbtn'), function () {
     var on = document.getElementById('notes').classList.toggle('on');
     document.body.classList.toggle('notesopen', on);

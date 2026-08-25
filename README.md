@@ -155,7 +155,15 @@ Name and symbol come from the environment, not from editing Solidity:
 TOKEN_NAME="Robo Devs" TOKEN_SYMBOL="ROBO" make deploy
 ```
 
-It prints the token address and the exact `register` command to paste next.
+It prints the token address and the exact `register` command to paste next —
+or skip the copying entirely:
+
+```
+make register NAME="your team"
+```
+
+which reads your token's address out of `broadcast/`. Pass `TOKEN=0x…` if you
+deployed somewhere else.
 
 `src/Badge.sol` is skipped by default — it costs 1,248,707 gas, nearly twice the
 Token, and nothing in the class calls it. `DEPLOY_BADGE=1 make deploy` when you
