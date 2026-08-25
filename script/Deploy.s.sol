@@ -20,12 +20,21 @@ contract Deploy is Script {
         Token token = new Token(name, symbol, supply, msg.sender);
         console.log("name  ", name);
         console.log("symbol", symbol);
-        Badge badge = new Badge(msg.sender);
+        // Badge is the "one pinned JSON per token" example — the other half of
+        // docs/pinata.md. The class never calls it: registering on UFSCBuilders
+        // already mints you an ERC-721, and this costs 1.25M gas, nearly twice
+        // the Token. Deploy it when you actually want it:
+        //   DEPLOY_BADGE=1 make deploy
+        address badge = address(0);
+        if (vm.envOr("DEPLOY_BADGE", false)) {
+            badge = address(new Badge(msg.sender));
+        }
 
         vm.stopBroadcast();
 
         console.log("token", address(token));
-        console.log("badge", address(badge));
+        if (badge != address(0)) console.log("badge", badge);
+        else console.log("badge  skipped - DEPLOY_BADGE=1 to include it");
         console.log("");
         console.log("now register it:");
         console.log("  cast send $UFSC_BUILDERS \\");

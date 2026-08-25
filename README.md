@@ -61,7 +61,7 @@ cast send $TOKEN "transfer(address,uint256)" $FRIEND 1ether \
 | --- | --- |
 | `src/UFSCBuilders.sol` | The class registry. Forty lines, and every idea from the session is in it. You **call** this one — the instructor deployed it. |
 | `src/Token.sol` | Your ERC-20. OpenZeppelin, capped, owner-minted. |
-| `src/Badge.sol` | Your ERC-721. `tokenURI` returns a string and the chain does not care what is behind it. |
+| `src/Badge.sol` | ERC-721 with one pinned JSON per token — the other half of [docs/pinata.md](docs/pinata.md). **Not deployed by default**: registering already mints you a badge, and this costs 1.25M gas. `DEPLOY_BADGE=1 make deploy` when you want it. |
 | `src/Disperse.sol` | Fund a whole room in one transaction. Fifteen lines, and one of them was a real bug — see [SLITHER.md](SLITHER.md). |
 | `test/` | 10 tests. `testFuzz_*` are properties, not examples — Foundry generates the inputs and tries to break you. |
 | `subgraph/` | Ready to deploy. The ABI is generated from your own build, so it cannot drift. |

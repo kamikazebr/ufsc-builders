@@ -12,11 +12,18 @@ import "./Base.s.sol";
 ///
 /// No DISPERSE set? It deploys one first, prints the address, and you keep it.
 contract Drop is Base {
-    /// Measured, not guessed: one student doing everything — deploy an ERC-20,
-    /// register (which also mints their NFT), 10 mints, 10 transfers, 5 approves
-    /// — burns about 1.9M gas. 0.05 ETH covers that up to ~25 gwei, which is far
-    /// above anything Sepolia normally sees. It is also exactly one minimum
-    /// claim from the pk910 faucet, so a student can top themselves up.
+    /// Measured on Sepolia, not guessed. One student doing everything:
+    ///   deploy Token                     708,453
+    ///   register (mints their NFT)       206,121
+    ///   ~25 mints/transfers/approves   ~1,000,000
+    ///                                  ----------
+    ///                                  ~1,915,000 gas
+    /// 0.05 ETH covers that up to ~26 gwei, far above anything Sepolia sees.
+    /// It is also one minimum claim from the pk910 faucet, so a student who
+    /// burns through it can top themselves up without asking.
+    ///
+    /// Badge.sol is NOT in that number: it costs 1,248,707 gas on its own and
+    /// the class never calls it, so `make deploy` skips it unless you ask.
     uint256 constant AMOUNT = 0.05 ether;
 
     function run() external {
