@@ -20,14 +20,24 @@ NETWORK ?= sepolia
 # With no ACCOUNT set, everything falls back to PRIVATE_KEY from .env — a raw
 # key sitting in a file. Fine for a testnet key that never held money. Not fine
 # for anything else. See docs/wallet.md.
-ACCOUNT ?=
-SENDER  ?=
-SIGNER  := $(if $(ACCOUNT),--account $(ACCOUNT) --sender $(SENDER),--private-key $(PRIVATE_KEY))
+ACCOUNT  ?=
+SENDER   ?=
+# Optional. --account prompts for the keystore password on EVERY signing
+# command, which during a class means typing it five times with a projector
+# behind you. Point this at a file and it stops asking:
+#     echo -n 'the password' > ~/.ufsc-pw && chmod 600 ~/.ufsc-pw
+#     PASSWORD_FILE=~/.ufsc-pw make drop
+# A password in a file is weaker than one in your head. For a testnet keystore
+# that never held real money, it is the better trade. For anything else it is
+# not - type it.
+PASSWORD_FILE ?=
+PWFLAG   := $(if $(PASSWORD_FILE),--password-file $(PASSWORD_FILE),)
+SIGNER   := $(if $(ACCOUNT),--account $(ACCOUNT) --sender $(SENDER) $(PWFLAG),--private-key $(PRIVATE_KEY))
 # ACCOUNT wins over PRIVATE_KEY, including over PRIVATE_KEY passed on the command
 # line — .env is read first and `make VAR=x` does not override it here. Setting
 # both then waits on a keystore password nobody typed, and forge reports that as
 # "unexpected end of file". So say out loud which key is signing.
-WHO     := $(if $(ACCOUNT),keystore $(ACCOUNT) → $(SENDER),PRIVATE_KEY from .env)
+WHO      := $(if $(ACCOUNT),keystore $(ACCOUNT) → $(SENDER)$(if $(PASSWORD_FILE), (password from file),),PRIVATE_KEY from .env)
 DISPERSE ?= 0x0000000000000000000000000000000000000000
 RPC     ?= $(SEPOLIA_RPC_URL)
 

@@ -167,6 +167,9 @@ make wallet-use name=ufsc        # writes ACCOUNT and SENDER into .env
 make drop                        # from here on, no arguments needed
 ```
 
+`--account` asks for the password on every command. `PASSWORD_FILE=~/.ufsc-pw
+make drop` stops that — see [docs/wallet.md](docs/wallet.md) for the trade-off.
+
 `make wallet` lists what Foundry already has and which one is in use. Without
 `ACCOUNT`, every target falls back to `PRIVATE_KEY` from `.env` — fine for a
 testnet key that never held money, not fine for anything else. Full detail in

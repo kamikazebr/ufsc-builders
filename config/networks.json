@@ -6,6 +6,14 @@
     "ufscBuilders": "0xaD08C29Aa13a01Ef33533398cf8bAA9eFEeAc360"
   },
 
+  "anvil": {
+    "_comment": "Local rehearsal: anvil --port 8545. Same commands, no real gas.",
+    "chainId": 31337,
+    "rpc": "http://127.0.0.1:8545",
+    "explorer": "",
+    "ufscBuilders": "0x0000000000000000000000000000000000000000"
+  },
+
   "_template": {
     "_comment": "Copy this block, rename it, fill it in. Chain ids: chainlist.org",
     "chainId": 0,

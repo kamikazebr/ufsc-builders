@@ -64,6 +64,24 @@ the clear and never in `.env`.
 result. That call costs a password prompt, which is exactly why it is done once
 and written down rather than recomputed on every `make`.
 
+### It will ask for the password every time
+
+`--account` prompts on every signing command. During a class that is five
+prompts with a projector behind you. Point Foundry at a file and it stops:
+
+```
+echo -n 'the password' > ~/.ufsc-pw && chmod 600 ~/.ufsc-pw
+PASSWORD_FILE=~/.ufsc-pw make drop
+```
+
+The Makefile turns that into `--password-file`. Every deploy line then prints
+`(password from file)` so you always know which of the two is happening.
+
+A password in a file is weaker than one in your head — anything that can read
+your disk can now sign. For a testnet keystore that has never held real money,
+that is the better trade against typing it repeatedly in front of a room. For
+anything else it is not: type it.
+
 From then on nothing needs arguments:
 
 ```
