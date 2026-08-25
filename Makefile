@@ -41,7 +41,7 @@ WHO      := $(if $(ACCOUNT),keystore $(ACCOUNT) → $(SENDER)$(if $(PASSWORD_FIL
 DISPERSE ?= 0x0000000000000000000000000000000000000000
 RPC     ?= $(SEPOLIA_RPC_URL)
 
-.PHONY: wallet wallet-import wallet-use help install build test fmt cov chisel deploy registry pin verify drop fund addresses slither abi subgraph clean
+.PHONY: wallet wallet-import wallet-use help setup install build test fmt cov chisel deploy registry pin verify drop fund addresses slither abi subgraph clean
 
 wallet:          ## list the keystores foundry knows about
 	@cast wallet list
@@ -68,6 +68,35 @@ help:            ## show this
 	@# firstword, not MAKEFILE_LIST: `-include .env` adds .env to that list, and
 	@# grep across two files prefixes every line with the filename.
 	@grep -E '^[a-z-]+:.*?## .*$$' $(firstword $(MAKEFILE_LIST)) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
+
+setup:           ## from zero on a new machine: toolchain, then dependencies
+	@# The only thing this repo genuinely needs is Foundry. node/pnpm are for the
+	@# subgraph and nothing else, so they are checked, not installed - installing
+	@# node correctly differs on every OS and getting it wrong is worse than
+	@# saying so.
+	@if command -v forge >/dev/null 2>&1; then \
+	  echo "forge   $$(forge --version 2>/dev/null | head -1)"; \
+	else \
+	  echo "forge   not found - installing Foundry from foundry.paradigm.xyz"; \
+	  echo "        (this is Foundry's official installer; it writes to ~/.foundry)"; \
+	  curl -L https://foundry.paradigm.xyz | bash || exit 1; \
+	  "$$HOME/.foundry/bin/foundryup" || exit 1; \
+	  echo ""; \
+	  echo "  >> Foundry installed. Open a NEW terminal, or run:"; \
+	  echo "     source ~/.bashrc     # or ~/.zshrc"; \
+	  echo "  then run make setup again."; \
+	  exit 0; \
+	fi
+	@command -v node >/dev/null 2>&1 && echo "node    $$(node --version)" \
+	  || echo "node    missing - only needed for the subgraph. nodejs.org, or fnm/nvm."
+	@command -v pnpm >/dev/null 2>&1 && echo "pnpm    $$(pnpm --version)" \
+	  || echo "pnpm    missing - only needed for the subgraph. npm i -g pnpm"
+	@command -v docker >/dev/null 2>&1 && echo "docker  $$(docker --version | cut -d, -f1)" \
+	  || echo "docker  missing - only needed for make slither. everything else works without it."
+	@echo ""
+	@$(MAKE) --no-print-directory install
+	@echo ""
+	@echo "now: make build && make test"
 
 install:         ## fetch dependencies (safe to re-run)
 	@# Dependencies are git submodules, same as 1Hive/gardens-v2. That makes

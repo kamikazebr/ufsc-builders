@@ -204,6 +204,9 @@ ul.points.warn li .k{color:var(--warn)}
 /* Assinaturas de interface sao longas e num projetor ninguem rola.
    So este slide usa a fonte menor. */
 .code.narrow{font-size:clamp(.55rem,.74vw,.84rem)}
+/* Um comando solto nao precisa de numero de linha. */
+.code.bare .n{display:none}
+.code.bare pre{padding:clamp(10px,1.4vh,16px) 0}
 .code pre{margin:0;padding:clamp(14px,1.8vh,22px) 0}
 .code .ln{display:block;padding:0 clamp(16px,2vw,26px);white-space:pre;position:relative}
 .code .ln.mark{background:var(--warn-soft);box-shadow:inset 3px 0 0 var(--warn)}
@@ -761,15 +764,16 @@ body.lean #lean{display:inline}
       <div>
         <h2><span class="i18n" lang="en">Put your name on the board.</span><span class="i18n" lang="pt">Põe teu nome no telão.</span></h2>
         <ol class="steps">
-          <li><span class="i18n" lang="en">Remix → <span class="mono">At Address</span> → paste the registry (below)</span><span class="i18n" lang="pt">Remix → <span class="mono">At Address</span> → cola o registry (abaixo)</span></li>
-          <li><span class="i18n" lang="en">Call <span class="mono">register("your team", &lt;your token address&gt;)</span> <span class="dim">— the one you just copied</span></span><span class="i18n" lang="pt">Chama <span class="mono">register("your team", &lt;your token address&gt;)</span> <span class="dim">— o que tu acabou de copiar</span></span></li>
-          <li><span class="i18n" lang="en">Confirm in Rabby. One transaction.</span><span class="i18n" lang="pt">Confirma no Rabby. Uma transação só.</span></li>
-          <li><span class="i18n" lang="en">Watch the board at the front. Then open Rabby → <span class="mono">NFTs</span>.</span><span class="i18n" lang="pt">Olha o telão lá na frente. Depois abre o Rabby → <span class="mono">NFTs</span>.</span></li>
+          <li><a href="https://sepolia.etherscan.io/address/0xaD08C29Aa13a01Ef33533398cf8bAA9eFEeAc360#writeContract" target="_blank" rel="noopener">Etherscan</a> &rarr; <span class="mono">Contract</span> &rarr; <span class="mono">Write Contract</span></li>
+          <li><span class="mono">Connect Wallet</span> <span class="dim">&rarr; Rabby</span></li>
+          <li><span class="i18n" lang="en"><span class="mono">2. register</span> &rarr; <span class="mono">name</span> = your team, <span class="mono">token</span> = the address you copied</span><span class="i18n" lang="pt"><span class="mono">2. register</span> &rarr; <span class="mono">name</span> = teu time, <span class="mono">token</span> = o endereço que tu copiou</span></li>
+          <li><span class="i18n" lang="en"><span class="mono">Write</span> &rarr; confirm in Rabby. Then the board, then Rabby &rarr; <span class="mono">NFTs</span>.</span><span class="i18n" lang="pt"><span class="mono">Write</span> &rarr; confirma no Rabby. Depois o telão, depois Rabby &rarr; <span class="mono">NFTs</span>.</span></li>
         </ol>
+        <p class="fns"><span class="dim"><span class="i18n" lang="en">Remix works too &mdash; but <span class="mono">Add Contract</span> needs the ABI, so you have to load and compile <span class="mono">UFSCBuilders.sol</span> first.</span><span class="i18n" lang="pt">No Remix também dá &mdash; mas o <span class="mono">Add Contract</span> precisa da ABI, então tem que carregar e compilar o <span class="mono">UFSCBuilders.sol</span> antes.</span></span></p>
                 <p class="maps" style="margin-top:clamp(10px,1.6vh,18px)"><span class="dim">registry ·</span> <a href="https://sepolia.etherscan.io/address/0xaD08C29Aa13a01Ef33533398cf8bAA9eFEeAc360#writeContract" target="_blank" rel="noopener"><b>0xaD08C29Aa13a01Ef33533398cf8bAA9eFEeAc360</b></a></p>
         <p class="fns"><a href="board.html" target="_blank" rel="noopener"><span class="i18n" lang="en">open the board</span><span class="i18n" lang="pt">abrir o telão</span></a> <span class="dim">·</span> <a href="https://sepolia.etherscan.io/address/0xaD08C29Aa13a01Ef33533398cf8bAA9eFEeAc360#readContract" target="_blank" rel="noopener">read contract</a> <span class="dim">·</span> <a href="https://remix.ethereum.org" target="_blank" rel="noopener">remix</a></p>
         <p class="done"><b><span class="i18n" lang="en">Done when</span><span class="i18n" lang="pt">Pronto quando</span></b><span class="i18n" lang="en">Your row is on the screen and the badge is in your wallet.</span><span class="i18n" lang="pt">tua linha está no telão e o badge está na tua carteira.</span></p>
-        <p class="fns" style="margin-top:clamp(10px,1.6vh,18px)"><span class="i18n" lang="en"><span class="dim">terminal, if you prefer:</span></span><span class="i18n" lang="pt"><span class="dim">no terminal, se preferir:</span></span> <span class="mono">cast send $UFSC_BUILDERS "register(string,address)" "your team" 0xYourToken</span></p>
+        <div class="code bare" style="margin-top:clamp(10px,1.6vh,18px)"><pre>cast send $UFSC_BUILDERS "register(string,address)" "your team" 0xYourToken</pre></div>
       </div>
       <div>
         <div class="cd" data-cd>05:00</div>
@@ -778,6 +782,9 @@ body.lean #lean{display:inline}
     </div>
   </div>
   <template class="note">
+    <p><strong>Por que Etherscan e não Remix:</strong> o <span class="mono">Add Contract</span> do Remix precisa da ABI — eles teriam que carregar e compilar o <span class="mono">UFSCBuilders.sol</span> antes. São mais três passos e um ponto de falha pra cada pessoa da sala. O contrato está verificado, então o Etherscan monta o formulário sozinho, com os campos já rotulados.</p>
+    <p><strong>Repara no botão <span class="mono">Simulate</span>, do lado do Write.</strong> Ele roda a chamada sem gastar gás e mostra se ia reverter. Mostra isso com o nome vazio: volta <span class="mono">NameEmpty</span>. É custom error com nome legível, de graça, antes de pagar.</p>
+
     <p><strong>"A tela" é o telão do registro</strong> — abre <span class="mono">slides/board.html</span> num segundo monitor ANTES de começar este bloco, e deixa ligado. Ele já abre apontando pro contrato certo, não precisa configurar nada.</p>
     <p><strong>Este é o momento da aula.</strong> Não corre. Uma chamada e três coisas acontecem de uma vez: a linha aparece no telão, o NFT cai na carteira, e o subgraph passa a ter o que indexar. É o pagamento de tudo que veio antes.</p>
     <p><strong>Uma transação, não duas.</strong> <span class="mono">register</span> escreve a linha E minta o badge. Mostra isso: não existe "e agora minta o NFT" — o mint está dentro do mesmo <span class="mono">_mint</span>, na primeira vez. Chamar de novo só atualiza a linha, não minta outro.</p>
@@ -822,14 +829,15 @@ body.lean #lean{display:inline}
   <div class="wrap">
     <h2><span class="i18n" lang="en">In this order.</span><span class="i18n" lang="pt">Nesta ordem.</span></h2>
     <ol class="steps cmd">
-      <li><span class="mono">git clone …</span> <span class="i18n" lang="en"><span class="dim">· then cd into it</span></span><span class="i18n" lang="pt"><span class="dim">· depois entra na pasta</span></span></li>
-      <li><span class="mono">make install</span> <span class="i18n" lang="en"><span class="dim">· forge-std + OpenZeppelin. once.</span></span><span class="i18n" lang="pt"><span class="dim">· forge-std + OpenZeppelin. uma vez só.</span></span></li>
-      <li><span class="mono">make build</span></li>
-      <li><span class="mono">make test</span> <span class="i18n" lang="en"><span class="dim">· 12 tests, 2 of them fuzzed</span></span><span class="i18n" lang="pt"><span class="dim">· 12 testes, 2 deles com fuzz</span></span></li>
-      <li><span class="mono">make deploy</span> <span class="dim">· NETWORK=sepolia</span></li>
-      <li><span class="mono">make abi</span> <span class="i18n" lang="en"><span class="dim">· regenerate the subgraph ABI from the build</span></span><span class="i18n" lang="pt"><span class="dim">· regenera a ABI do subgraph a partir do build</span></span></li>
-      <li><span class="mono">make subgraph</span> <span class="dim">· codegen + build</span></li>
-    </ol>
+          <li><span class="mono">git clone …</span> <span class="i18n" lang="en"><span class="dim">· then cd into it</span></span><span class="i18n" lang="pt"><span class="dim">· depois entra na pasta</span></span></li>
+          <li><span class="mono">make setup</span> <span class="dim"><span class="i18n" lang="en">· installs Foundry if you do not have it. start here on a clean laptop.</span><span class="i18n" lang="pt">· instala o Foundry se tu não tiver. começa aqui num laptop limpo.</span></span></li>
+          <li><span class="mono">make install</span> <span class="i18n" lang="en"><span class="dim">· forge-std + OpenZeppelin, as submodules. setup already calls it.</span></span><span class="i18n" lang="pt"><span class="dim">· forge-std + OpenZeppelin, via submódulo. o setup já chama.</span></span></li>
+          <li><span class="mono">make build</span></li>
+          <li><span class="mono">make test</span> <span class="i18n" lang="en"><span class="dim">· 21 tests, three of them fuzzed</span></span><span class="i18n" lang="pt"><span class="dim">· 21 testes, três deles com fuzz</span></span></li>
+          <li><span class="mono">make deploy</span> <span class="dim">· NETWORK=sepolia</span></li>
+          <li><span class="mono">make abi</span> <span class="i18n" lang="en"><span class="dim">· regenerate the subgraph ABI from the build</span></span><span class="i18n" lang="pt"><span class="dim">· regenera a ABI do subgraph a partir do build</span></span></li>
+          <li><span class="mono">make subgraph</span> <span class="dim">· codegen + build</span></li>
+        </ol>
     <p class="fns" style="margin-top:clamp(16px,2.4vh,28px)"><span class="i18n" lang="en"><span class="dim">anytime:</span></span><span class="i18n" lang="pt"><span class="dim">a qualquer hora:</span></span> make fmt · make cov · make chisel · make slither</p>
     <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://github.com/kamikazebr/ufsc-builders" target="_blank" rel="noopener"><img class="qr" alt="QR for https://github.com/kamikazebr/ufsc-builders" data-qr="https://github.com/kamikazebr/ufsc-builders" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXIAAAFyCAIAAABnRsZeAAAGiUlEQVR42u3dvYr0RhCGUa9RaHDi+79CJwbncvaFYtma8ltdOiefHf3NQwuK3q/7vn8D+JzfXQJAVgBZAWQFQFYAWQFkBUBWAFkBZAVAVgBZAWQFkBUAWQFkBZAVAFkBZAXY56p8+I8//1p2Of795+/I1Xj+3ue/XDnmPqlnI3Ul/RasVgAvQYCsALICICuArACyAiArgKwAy1x9f9r05/evRuqoUvO7qauReibf9luwWgFkBZAVQFYAZAWQFUBWAGQFkBVggSv1xSdOUlaO2Rztpz77fEb2/Z1wvlYrgKwAsgLICoCsALICyAqArACyAixwuQSfMnO32spRVWY0T5zuPXFC12oFkBUAWQFkBZAVAFkBZAWQFQBZAZqYsv2Yyhxt32zo286oMilrjtZqBZAVQFYAZAWQFUBWAGQFkBVAVgB+iU3Zvm2iceb5po4qtWtsam74bb8FqxVAVgBZAWQFQFYAWQFkBUBWAFkBFmicsu3bY3Wm51nJylxp32crd/DE8+27Vn4LViuArACyAsgKgKwAsgLICoCsALICLFOasn3bfrR9Unu79tk3++u3YLUCyAogKwCyAsgKICsAsgLICiArwKuUpmxn7hta8XzMqSnMmdfKxOrpz7PVCuAlCJAVAFkBZAWQFQBZAWQFkBWAB0P3su2bSe075n370fZdDVfy+2fUN7/bd52tVgAvQYCsALICICuArACyAiArgKwAC1x9f3rmTrdmYf+fe5Tau3fmU9d3JZ8/m3rarVYAWQFkBZAVAFkBZAWQFQBZAWQFWOA68aBn7kfbN8GZmnbtu5J993fm/sqpK9n3tFutAF6CAFkBkBVAVgBZAWQFQFYAWQHW+7rv+8cfnrn354nfu+9apZ4cd8FqBfASBCArgKwAsgIgK4CsALICyArARwydsq1ITX+m9rKtqOxmOvOMZl6N1B1M/Y6sVgAvQYCsALICICuArACyAiArgKwAC5SmbCv6phJnTspW7DuqmZ9NPVd9v5TU7K/VCiArgKwAsgIgK4CsALICICuArAALNO5le+JsaJ/U9OfMKczUlZy5+3LliZ15B61WAFkBZAWQFQBZAWQFkBUAWQFkBVjgqnz4xInG1I6kMydW+65k3/mm9sGd+VtIzWdbrQBeggBZAZAVQFYAWQFkBUBWAFkB1ivtZdsnNZU4c8fZmXfhxL2KU/e375hTV9JqBfASBMgKgKwAsgLICiArALICyAqw3jXzsPqmTk/c6/TEPYP7rsbM76385ZnPpNUK4CUIkBUAWQFkBZAVAFkBZAWQFeDlYnvZmlj9lJkTq313P3XMqac99WzYyxbwEgTICoCsALICyAqArACyAsgK8HKxvWz3zTv2TZ2mpopTc7SpY+67R6nfUeqYrVYAWQFkBZAVAFkBZAWQFQBZAWQFWKC0l+3M/1ZfYdr1Uxzzm/+y1QrgJQiQFUBWAGQFkBVAVgBkBZAVYIHGvWwrc6Wp7z1xR9LKX654PqoTJ7Ads9UK4CUIkBUAWQFkBZAVAFkBZAWQFYBfrhMPujIdaL/S7//l1FGl9rKtmDm9nTpmqxXASxAgK4CsAMgKICuArADICiArwAKxKdvUHqt9x5yaDd23K/DMqeLUPTrxl2K1AsgKICuArADICiArgKwAyAogK8ACpSnbmTt0mt/91NWofG9q5njmlUxd59Qv1GoFkBVAVgBZAZAVQFYAWQGQFUBWgAVKU7apSco+z1OJfROcqVnJvp1f9+1HO/MOzjwqqxVAVgBZAWQFQFYAWQFkBUBWAFkBFrj6/vTMnW737RtaOaqZ87t9T11qN+LUE2u1AngJApAVQFYAWQFkxSUAZAWQFUBWAH7sSn3xifOOfef7tmPum3WuPBvPf3nmtOvMnX2tVgBZAWQFkBUAWQFkBZAVAFkBZAVY4HIJ5ps5k1r53pn7/lakrlXqs1YrgJcgQFYAZAWQFUBWAFkBkBVAVoD1TNkeoG8mtbJ7a+qoUpOjlWPuu7+pz1qtAF6CAFkBkBVAVgBZAWQFQFYAWQHW+7rv+8cfnrlf6b5jrpxRxYl3sO98+56cfXfQagWQFUBWAFkBkBVAVgBZAZAVQFaABRqnbE9UmbNMfW/qmCtn1Gfm+aZ2503NlFutALICyAogKwCyAsgKICsAsgLICrBAacoWwGoFkBVAVgBZAZAVQFYAWQGQFUBWAFkBkBVAVgBZAZAVQFYAWQFkBUBWAFkBXuE/j2HvYFzcGJAAAAAASUVORK5CYII="></a><a class="qr-cap" href="https://github.com/kamikazebr/ufsc-builders" target="_blank" rel="noopener">github.com/kamikazebr/ufsc-builders</a></div></div>
   </div>

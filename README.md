@@ -49,14 +49,18 @@ graph-cli and slither, in a browser tab. See [docs/remix.md](docs/remix.md).
 ### Foundry — when it starts to matter
 
 ```bash
-curl -L https://foundry.paradigm.xyz | bash && foundryup
-
-forge install foundry-rs/forge-std
-forge install OpenZeppelin/openzeppelin-contracts
-
-forge build
-forge test -vvv        # 21 tests, three of them fuzzed over 512 inputs
+make setup             # installs Foundry if missing, then the dependencies
+make build
+make test              # 21 tests, three of them fuzzed over 512 inputs
 ```
+
+`make setup` checks node, pnpm and docker too, and tells you which are missing
+and what each is for — node and pnpm only matter for the subgraph, docker only
+for `make slither`. Everything else works without them.
+
+Dependencies are git submodules, so `forge install` is not how you fetch them:
+`make install` (which `setup` calls) runs `git submodule update --init
+--recursive`. Cloning with `--recursive` does it up front.
 
 Deploy:
 
