@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import "forge-std/Script.sol";
 import "../src/Disperse.sol";
+import "./Base.s.sol";
 
 /// Pay the whole room in ONE transaction.
 ///
@@ -10,7 +11,7 @@ import "../src/Disperse.sol";
 ///   DISPERSE=0x… make drop  # one tx, everybody funded
 ///
 /// No DISPERSE set? It deploys one first, prints the address, and you keep it.
-contract Drop is Script {
+contract Drop is Base {
     /// Measured, not guessed: one student doing everything — deploy an ERC-20,
     /// register (which also mints their NFT), 10 mints, 10 transfers, 5 approves
     /// — burns about 1.9M gas. 0.05 ETH covers that up to ~25 gwei, which is far
@@ -19,6 +20,12 @@ contract Drop is Script {
     uint256 constant AMOUNT = 0.05 ether;
 
     function run() external {
+        // Which chain did you mean? config/networks.json says, NETWORK picks it,
+        // and this refuses to run anywhere else. Without it a stale RPC in .env
+        // sends the room's funding to whatever chain that URL points at.
+        _load();
+        require(block.chainid == chainId, "wrong chain - check NETWORK and your RPC");
+
         string[] memory lines = vm.split(vm.readFile("script/addresses.txt"), "\n");
 
         address[] memory to = new address[](lines.length);
@@ -34,11 +41,21 @@ contract Drop is Script {
         assembly { mstore(to, n) }                       // shrink to what we filled
 
         console.log("funding", n, "wallets");
+        console.log("total to send (wei)", n * AMOUNT);
         if (n == 0) return;
 
         vm.startBroadcast();
 
         Disperse d = Disperse(vm.envOr("DISPERSE", address(0)));
+        if (address(d) != address(0)) {
+            // A DISPERSE exported from a chat message, or left over from another
+            // chain, is a contract that keeps the whole batch. Compare the code
+            // actually deployed there against what this repo compiles.
+            require(
+                address(d).codehash == keccak256(type(Disperse).runtimeCode),
+                "DISPERSE is not this repo's Disperse - unset it and let the script deploy one"
+            );
+        }
         if (address(d) == address(0)) {
             d = new Disperse();
             console.log("deployed Disperse at", address(d));

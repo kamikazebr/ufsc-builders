@@ -34,7 +34,8 @@ contract Fund is Script {
         }
         vm.stopBroadcast();
 
-        console.log("funded", sent, "wallets with 0.01 ETH each");
+        console.log("funded", sent, "wallets");
+        console.log("each received (wei)", AMOUNT);
     }
 
     function _trim(string memory s) internal pure returns (string memory) {

@@ -86,7 +86,10 @@ abi:             ## regenerate the subgraph ABI from the build — never hand-ed
 	@echo "wrote subgraph/abis/UFSCBuilders.json"
 
 deploy:          ## deploy Token + Badge   (NETWORK=sepolia make deploy)
-	NETWORK=$(NETWORK) forge script script/Deploy.s.sol \
+	@# @-prefixed: make would otherwise echo the recipe with $(SIGNER) already
+	@# expanded, printing --private-key <the key> onto a projector.
+	@echo "forge script script/Deploy.s.sol --rpc-url $(RPC) [signer] --broadcast --verify"
+	@NETWORK=$(NETWORK) forge script script/Deploy.s.sol \
 		--rpc-url $(RPC) $(SIGNER) --broadcast --verify
 
 pin:             ## pin assets/badge.png to IPFS via Pinata, print the CID
@@ -101,7 +104,8 @@ pin:             ## pin assets/badge.png to IPFS via Pinata, print the CID
 	@echo "put that line in .env, then: make registry"
 
 registry:        ## deploy the class registry ONCE (instructor only, needs BADGE_CID)
-	NETWORK=$(NETWORK) forge script script/DeployRegistry.s.sol \
+	@echo "forge script script/DeployRegistry.s.sol --rpc-url $(RPC) [signer] --broadcast --verify"
+	@NETWORK=$(NETWORK) forge script script/DeployRegistry.s.sol \
 		--rpc-url $(RPC) $(SIGNER) --broadcast --verify
 
 verify:          ## verify the registry on Etherscan (needs ETHERSCAN_API_KEY)
@@ -110,23 +114,31 @@ verify:          ## verify the registry on Etherscan (needs ETHERSCAN_API_KEY)
 	@# Contract. This fixes that after the fact.
 	@test -n "$(ETHERSCAN_API_KEY)" || (echo "set ETHERSCAN_API_KEY in .env - https://etherscan.io/apidashboard"; exit 1)
 	@test -n "$(UFSC_BUILDERS)" || (echo "set UFSC_BUILDERS in .env"; exit 1)
-	forge verify-contract $(UFSC_BUILDERS) src/UFSCBuilders.sol:UFSCBuilders \
+	@forge verify-contract $(UFSC_BUILDERS) src/UFSCBuilders.sol:UFSCBuilders \
 		--chain sepolia --etherscan-api-key $(ETHERSCAN_API_KEY) --watch \
 		--constructor-args $$(cast abi-encode "constructor(string)" "ipfs://$(BADGE_CID)")
 
 addresses:       ## pull every 0x address out of script/raw.txt, dedupe, write addresses.txt
 	@# raw.txt and addresses.txt are gitignored — they hold other people's wallets.
 	@[ -f script/raw.txt ] || cp script/raw.txt.example script/raw.txt
-	@grep -oE '0[xX][a-fA-F0-9]{40}' script/raw.txt \
+	@# The lookarounds matter: without them the 40 hex chars at the start of a
+	@# 64-char transaction hash match, and you fund an address nobody owns.
+	@# Spreadsheet exports are full of tx hashes.
+	@grep -oP '(?<![0-9a-fA-F])0[xX][a-fA-F0-9]{40}(?![0-9a-fA-F])' script/raw.txt \
 		| tr 'A-FX' 'a-fx' | sort -u > script/addresses.txt
-	@echo "$$(wc -l < script/addresses.txt) unique addresses"
+	@n=$$(wc -l < script/addresses.txt); echo "$$n unique addresses"; \
+	  if [ "$$n" = "0" ]; then \
+	    echo "nothing to fund - paste the spreadsheet column into script/raw.txt"; \
+	  fi
 
 drop:            ## fund the whole room in ONE transaction (deploys Disperse if needed)
-	DISPERSE=$(DISPERSE) forge script script/Drop.s.sol \
+	@echo "forge script script/Drop.s.sol --rpc-url $(RPC) [signer] --broadcast"
+	@DISPERSE=$(DISPERSE) NETWORK=$(NETWORK) forge script script/Drop.s.sol \
 		--rpc-url $(RPC) $(SIGNER) --broadcast
 
 fund:            ## same, but as N separate transactions — no contract needed
-	forge script script/Fund.s.sol \
+	@echo "forge script script/Fund.s.sol --rpc-url $(RPC) [signer] --broadcast"
+	@NETWORK=$(NETWORK) forge script script/Fund.s.sol \
 		--rpc-url $(RPC) $(SIGNER) --broadcast
 
 slither:         ## static analysis in a container — findings triaged in SLITHER.md
