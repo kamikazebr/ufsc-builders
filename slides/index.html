@@ -620,17 +620,46 @@ body.lean #lean{display:inline}
   </div>
   <template class="note">
     <p class="say"><strong>A planilha já está pronta e aberta pra escrita.</strong> Deixa ela projetada no telão do lado — eles veem as linhas enchendo e isso sozinho já apressa quem está enrolando.</p>
-    <p><strong>Formulário do Google, um campo só: "your wallet address".</strong> Respostas caem numa planilha, tu vê a contagem subir e sabe quando parar de esperar. Melhor que grupo de Telegram: não se perde no scroll, não fica visível pro evento inteiro, e a coluna já sai limpa.</p>
     <p><strong>Faucet não escala pra 30 pessoas e contrato de faucet não resolve</strong> — pra chamar precisa de gás, que é justamente o que falta. Tu empurra.</p>
     <p>Copia a coluna da planilha para <span class="mono">script/raw.txt</span> (com cabeçalho, timestamp, do jeito que vier), e depois:</p>
-    <p class="say"><span class="mono">make addresses &amp;&amp; make fund</span></p>
+    <p class="say"><span class="mono">make addresses &amp;&amp; make drop</span></p>
     <p>O <span class="mono">make addresses</span> extrai todo <span class="mono">0x…</span> de texto bagunçado, minúsculo, sem duplicata. Não precisa limpar nada. O <span class="mono">fund</span> manda 0.01 pra cada um numa transação e pula quem já tem saldo.</p>
     <p><strong>Quanto mandar: 0,05 por aluno, 1,5 no total.</strong> Medido, não chutado — um aluno fazendo tudo (deploy do ERC-20, register+NFT, 10 mints, 10 transfers, 5 approves) queima ~1,9M de gás. 0,05 cobre isso até ~25 gwei, muito acima do normal da Sepolia.</p>
-    <p><strong>Melhor ainda: coleta hoje à noite no grupo e funda antes.</strong> Aí esse bloco cai pra 3 minutos e vira só o deploy.</p>
+    <p><strong>Melhor ainda: manda a planilha antes e funda com a sala ainda chegando.</strong> Aí esse bloco cai pra 3 minutos e vira só o deploy.</p>
   </template>
 </section>
 
-<section class="slide" data-at="56" data-block="07 Subgraph" data-timer="12" data-title="7 · Subgraph">
+<section class="slide" data-at="56" data-block="07 Register" data-timer="5" data-title="7 · Register">
+  <div class="wrap">
+    <div class="build">
+      <div>
+        <h2>Put your name on the board.</h2>
+        <ol class="steps">
+          <li>Copy the registry address from the screen</li>
+          <li>Remix → <span class="mono">At Address</span> → paste it</li>
+          <li>Call <span class="mono">register("your team", &lt;your token&gt;)</span></li>
+          <li>Look at the board. Then look at Rabby → NFTs.</li>
+        </ol>
+        <p class="done"><b>Done when</b>Your row is on the screen and the badge is in your wallet.</p>
+        <p class="fns" style="margin-top:clamp(10px,1.6vh,18px)"><span class="dim">terminal, if you prefer:</span> <span class="mono">cast send $UFSC_BUILDERS "register(string,address)" "your team" 0xYourToken</span></p>
+      </div>
+      <div>
+        <div class="cd" data-cd>05:00</div>
+        <div class="cd-row"><span class="cd-lab">build time</span><button class="cd-reset" data-reset type="button">reset</button></div>
+      </div>
+    </div>
+  </div>
+  <template class="note">
+    <p><strong>Este é o momento da aula.</strong> Não corre. Uma chamada e três coisas acontecem de uma vez: a linha aparece no telão, o NFT cai na carteira, e o subgraph passa a ter o que indexar. É o pagamento de tudo que veio antes.</p>
+    <p><strong>Uma transação, não duas.</strong> <span class="mono">register</span> escreve a linha E minta o badge. Mostra isso: não existe "e agora minta o NFT" — o mint está dentro do mesmo <span class="mono">_mint</span>, na primeira vez. Chamar de novo só atualiza a linha, não minta outro.</p>
+    <p><strong>tokenId = número da linha.</strong> Pergunta quem foi o #1 e quem é o último. O número não é sorteio nem sequência aleatória — é a posição no array. Isso fecha a tabela do slide 3.</p>
+    <p><strong>Abre o NFT no Rabby na tua tela.</strong> O JSON foi montado dentro do contrato na hora da chamada; a imagem veio do IPFS. Os dois slides anteriores viram uma coisa só aqui.</p>
+    <p class="say">Erros que vão aparecer: <span class="mono">NameEmpty</span> (deixou em branco), <span class="mono">NameTooLong</span> (passou de 32), e "insufficient funds" de quem não colou o endereço na planilha. Custom error com nome legível — mostra que revert não precisa ser <span class="mono">0x</span>.</p>
+    <p><strong>Deixa o telão do lado.</strong> A sala lendo os próprios nomes aparecerem é o que eles vão lembrar.</p>
+  </template>
+</section>
+
+<section class="slide" data-at="61" data-block="08 Subgraph" data-timer="10" data-title="8 · Subgraph">
   <div class="wrap">
     <div class="build">
       <div>
@@ -660,7 +689,7 @@ body.lean #lean{display:inline}
   </template>
 </section>
 
-<section class="slide" data-at="71" data-block="08 Scripts" data-title="8 · Ordem dos comandos">
+<section class="slide" data-at="71" data-block="09 Scripts" data-title="9 · Ordem dos comandos">
   <div class="wrap">
     <h2>In this order.</h2>
     <ol class="steps cmd">
@@ -685,7 +714,7 @@ body.lean #lean{display:inline}
   </template>
 </section>
 
-<section class="slide" data-at="78" data-block="09 Depois" data-title="9 · Depois da aula">
+<section class="slide" data-at="78" data-block="10 Depois" data-title="10 · Depois da aula">
   <div class="wrap">
     <h2>Se quiser ver de novo.</h2>
     <p class="fns" style="margin-bottom:clamp(12px,1.8vh,20px)"><span class="dim">tudo em português, tudo meu:</span></p>
