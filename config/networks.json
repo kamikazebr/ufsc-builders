@@ -3,7 +3,7 @@
     "chainId": 11155111,
     "rpc": "https://ethereum-sepolia-rpc.publicnode.com",
     "explorer": "https://sepolia.etherscan.io",
-    "ufscBuilders": "0x0000000000000000000000000000000000000000"
+    "ufscBuilders": "0xaD08C29Aa13a01Ef33533398cf8bAA9eFEeAc360"
   },
 
   "_template": {

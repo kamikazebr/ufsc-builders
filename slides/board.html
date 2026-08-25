@@ -107,7 +107,12 @@ li.fresh{border-color:var(--good);background:rgba(87,201,154,.09)}
   var listEl = document.getElementById('list');
   var statusEl = document.getElementById('status');
   var nEl = document.getElementById('n');
-  var CFG = { addr: localStorage.getItem('sr.addr') || '', rpc: localStorage.getItem('sr.rpc') || '', exp: localStorage.getItem('sr.exp') || 'https://sepolia.etherscan.io' };
+  // Defaults are the registry deployed for this class, so the board works the
+  // moment it opens. localStorage still wins, so pasting another address in
+  // the setup box overrides them and survives a reload.
+  var DEF_ADDR = '0xaD08C29Aa13a01Ef33533398cf8bAA9eFEeAc360';
+  var DEF_RPC  = 'https://ethereum-sepolia-rpc.publicnode.com';
+  var CFG = { addr: localStorage.getItem('sr.addr') || DEF_ADDR, rpc: localStorage.getItem('sr.rpc') || DEF_RPC, exp: localStorage.getItem('sr.exp') || 'https://sepolia.etherscan.io' };
   var known = {};
   var first = true;
 

@@ -26,7 +26,7 @@ SIGNER  := $(if $(ACCOUNT),--account $(ACCOUNT) --sender $(SENDER),--private-key
 DISPERSE ?= 0x0000000000000000000000000000000000000000
 RPC     ?= $(SEPOLIA_RPC_URL)
 
-.PHONY: wallet wallet-import wallet-use help install build test fmt cov chisel deploy registry pin drop fund addresses slither abi subgraph clean
+.PHONY: wallet wallet-import wallet-use help install build test fmt cov chisel deploy registry pin verify drop fund addresses slither abi subgraph clean
 
 wallet:          ## list the keystores foundry knows about
 	@cast wallet list
@@ -103,6 +103,16 @@ pin:             ## pin assets/badge.png to IPFS via Pinata, print the CID
 registry:        ## deploy the class registry ONCE (instructor only, needs BADGE_CID)
 	NETWORK=$(NETWORK) forge script script/DeployRegistry.s.sol \
 		--rpc-url $(RPC) $(SIGNER) --broadcast --verify
+
+verify:          ## verify the registry on Etherscan (needs ETHERSCAN_API_KEY)
+	@# --verify during deploy falls back to Sourcify when no key is set, and
+	@# Sourcify-verified is NOT Etherscan-verified: no source tab, no Read/Write
+	@# Contract. This fixes that after the fact.
+	@test -n "$(ETHERSCAN_API_KEY)" || (echo "set ETHERSCAN_API_KEY in .env - https://etherscan.io/apidashboard"; exit 1)
+	@test -n "$(UFSC_BUILDERS)" || (echo "set UFSC_BUILDERS in .env"; exit 1)
+	forge verify-contract $(UFSC_BUILDERS) src/UFSCBuilders.sol:UFSCBuilders \
+		--chain sepolia --etherscan-api-key $(ETHERSCAN_API_KEY) --watch \
+		--constructor-args $$(cast abi-encode "constructor(string)" "ipfs://$(BADGE_CID)")
 
 addresses:       ## pull every 0x address out of script/raw.txt, dedupe, write addresses.txt
 	@# raw.txt and addresses.txt are gitignored — they hold other people's wallets.

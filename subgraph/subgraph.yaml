@@ -6,9 +6,9 @@ dataSources:
     name: UFSCBuilders
     network: sepolia
     source:
-      address: "0x0000000000000000000000000000000000000000" # <- paste yours
+      address: "0xaD08C29Aa13a01Ef33533398cf8bAA9eFEeAc360"
       abi: UFSCBuilders
-      startBlock: 0                                          # <- deploy block
+      startBlock: 11561391
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

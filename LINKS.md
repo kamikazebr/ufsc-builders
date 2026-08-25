@@ -56,6 +56,13 @@ Slow for a room of thirty. Fine for one person on a Saturday.
 | [Three lines that clone a contract](https://youtu.be/B0V3zoK9sxo) | 9 min · EIP-1167 and Yul |
 | [Subgraph, start to finish](https://www.youtube.com/watch?v=YYe5gYzmXU4) | 1h04 · schema through deploy |
 
+### Understanding the key itself
+
+| | |
+|---|---|
+| [iancoleman.io/bip39](https://iancoleman.io/bip39/) | seed phrase → private key → address, every step visible. Run it offline with a throwaway seed — a site that turns a seed into keys is exactly the site you never paste a real seed into. |
+
+
 ## The slides
 
 In [`slides/`](slides/). Open `index.html` in a browser — no build, no server.
