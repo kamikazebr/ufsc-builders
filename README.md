@@ -3,8 +3,31 @@
 Starter repo for **Module 2 — Solidity & Token Standards**
 Ethereum Builders Tour · Florianópolis · 25 Aug 2026
 
-Three contracts, ten tests, a subgraph, and five pages that answer the questions
-you will actually hit at the hackathon on the 29th.
+Four contracts, twenty-one tests, a subgraph, and nine pages that answer the
+questions you will actually hit at the hackathon on the 29th.
+
+---
+
+## Live, right now
+
+Everything below is deployed and verified on **Sepolia**. You do not deploy the
+registry — you call it.
+
+| | |
+|---|---|
+| **Registry** | [`0xaD08C29Aa13a01Ef33533398cf8bAA9eFEeAc360`](https://sepolia.etherscan.io/address/0xaD08C29Aa13a01Ef33533398cf8bAA9eFEeAc360#code) — verified source, Read/Write tabs live |
+| **Subgraph** | [playground](https://api.studio.thegraph.com/query/1758157/ufscbuilder/v0.0.1/graphql) — public GraphiQL, no login |
+| **Badge image** | `ipfs://bafkreigpgwxwpaaocq5ut3g2sfaeadhqpei2r5nmlnbijcpr4uehppdl54` |
+| **Board** | `slides/board.html` — open it, it already points at the registry |
+
+Your one call, once your token is deployed:
+
+```solidity
+register("your team", <your token address>)
+```
+
+That single transaction writes your row **and** mints your badge. The token id
+is your row number.
 
 ---
 
@@ -32,7 +55,7 @@ forge install foundry-rs/forge-std
 forge install OpenZeppelin/openzeppelin-contracts
 
 forge build
-forge test -vvv        # 10 tests, two of them fuzzed over 512 inputs
+forge test -vvv        # 21 tests, three of them fuzzed over 512 inputs
 ```
 
 Deploy:
@@ -63,7 +86,7 @@ cast send $TOKEN "transfer(address,uint256)" $FRIEND 1ether \
 | `src/Token.sol` | Your ERC-20. OpenZeppelin, capped, owner-minted. |
 | `src/Badge.sol` | ERC-721 with one pinned JSON per token — the other half of [docs/pinata.md](docs/pinata.md). **Not deployed by default**: registering already mints you a badge, and this costs 1.25M gas. `DEPLOY_BADGE=1 make deploy` when you want it. |
 | `src/Disperse.sol` | Fund a whole room in one transaction. Fifteen lines, and one of them was a real bug — see [SLITHER.md](SLITHER.md). |
-| `test/` | 10 tests. `testFuzz_*` are properties, not examples — Foundry generates the inputs and tries to break you. |
+| `test/` | 21 tests. `testFuzz_*` are properties, not examples — Foundry generates the inputs and tries to break you. `DisperseReentrancy.t.sol` is a real theft bug, reproduced then fixed. |
 | `subgraph/` | Ready to deploy. The ABI is generated from your own build, so it cannot drift. |
 | `.github/workflows/` | `forge test` and Slither on every push. |
 
@@ -120,27 +143,56 @@ All in Portuguese, all by the instructor:
 | [Three lines that clone a contract](https://youtu.be/B0V3zoK9sxo) | 9 min · EIP-1167 and Yul |
 | [Subgraph, start to finish](https://www.youtube.com/watch?v=YYe5gYzmXU4) | 1h04 · schema through deploy |
 
+## Deploying your own token
+
+Name and symbol come from the environment, not from editing Solidity:
+
+```
+TOKEN_NAME="Robo Devs" TOKEN_SYMBOL="ROBO" make deploy
+```
+
+It prints the token address and the exact `register` command to paste next.
+
+`src/Badge.sol` is skipped by default — it costs 1,248,707 gas, nearly twice the
+Token, and nothing in the class calls it. `DEPLOY_BADGE=1 make deploy` when you
+want the per-token-metadata example.
+
 ## Funding a room (instructor)
 
 Sign with a keystore, not a key in a file:
 
 ```
-cast wallet import ufsc --interactive     # once — asks for the key, then a password
-cast wallet address --account ufsc        # the address it holds
-ACCOUNT=ufsc SENDER=0x… make drop
+make wallet-import name=ufsc     # once — asks for the key, then a password
+make wallet-use name=ufsc        # writes ACCOUNT and SENDER into .env
+make drop                        # from here on, no arguments needed
 ```
 
-`make wallet` lists what Foundry already has. Without `ACCOUNT`, every target
-falls back to `PRIVATE_KEY` from `.env` — fine for a testnet key that never held
-money, not fine for anything else.
+`make wallet` lists what Foundry already has and which one is in use. Without
+`ACCOUNT`, every target falls back to `PRIVATE_KEY` from `.env` — fine for a
+testnet key that never held money, not fine for anything else. Full detail in
+[docs/wallet.md](docs/wallet.md).
+
+Two more instructor targets:
+
+```
+make pin       # pins assets/badge.png, prints BADGE_CID for .env
+make registry  # deploys UFSCBuilders with that image. Once, before class.
+make verify    # Etherscan verification, if --verify fell back to Sourcify
+```
+
+`make verify` exists because `--verify` silently uses Sourcify when
+`ETHERSCAN_API_KEY` is empty — and Sourcify-verified is not Etherscan-verified:
+no source tab, no Read/Write Contract.
 
 An empty wallet cannot call a faucet contract — calling costs gas, which is the
 thing it does not have. So the instructor pushes instead of them pulling.
 
-1. A Google Form with one field, `your wallet address`. QR on screen.
-2. Responses land in a Sheet. Watch the count; you know when to stop waiting.
+1. A shared spreadsheet, one row each: name and wallet address. QR on screen,
+   editable without a Google login.
+2. Watch the rows fill; you know when to stop waiting.
 3. Copy the column into `script/raw.txt` — header, timestamps, whatever, it does
-   not need cleaning.
+   not need cleaning. Both `raw.txt` and `addresses.txt` are gitignored: they
+   hold other people's wallets.
 
 ```bash
 make addresses            # pulls every 0x… out of raw.txt, lowercases, dedupes
@@ -148,9 +200,14 @@ DISPERSE=0x… make drop    # 0.05 ETH each, in ONE transaction
 ```
 
 `make drop` deploys `src/Disperse.sol` the first time and prints its address —
-keep it and pass it back as `DISPERSE=` so the next run reuses it. Both it and
-`make fund` (which sends N separate transactions instead, no contract needed)
-skip anyone who already has a balance, so re-running is safe.
+keep it and pass it back as `DISPERSE=` so the next run reuses it, and the whole
+room is funded in **one** transaction. It refuses a `DISPERSE` whose deployed
+code is not this repo's, and refuses to run at all when the chain does not match
+`NETWORK`.
+
+`make fund` does the same job as N separate transactions, no contract needed —
+simpler to read, thirty nonces to wait through. Both skip anyone who already has
+a balance, so re-running is safe.
 
 Fifteen lines, and you can read all of them. That is the reason to deploy your
 own rather than connecting a funded wallet to a website you did not read.
