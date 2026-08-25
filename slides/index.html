@@ -810,7 +810,7 @@ body.presenter #presbtn{display:none}
                 <p class="maps" style="margin-top:clamp(10px,1.6vh,18px)"><span class="dim">registry ·</span> <a href="https://sepolia.etherscan.io/address/0xaD08C29Aa13a01Ef33533398cf8bAA9eFEeAc360#writeContract" target="_blank" rel="noopener"><b>0xaD08C29Aa13a01Ef33533398cf8bAA9eFEeAc360</b></a></p>
         <p class="fns"><a href="board.html" target="_blank" rel="noopener"><span class="i18n" lang="en">open the board</span><span class="i18n" lang="pt">abrir o telão</span></a> <span class="dim">·</span> <a href="https://sepolia.etherscan.io/address/0xaD08C29Aa13a01Ef33533398cf8bAA9eFEeAc360#readContract" target="_blank" rel="noopener">read contract</a> <span class="dim">·</span> <a href="https://remix.ethereum.org" target="_blank" rel="noopener">remix</a></p>
         <p class="done"><b><span class="i18n" lang="en">Done when</span><span class="i18n" lang="pt">Pronto quando</span></b><span class="i18n" lang="en">Your row is on the screen and the badge is in your wallet.</span><span class="i18n" lang="pt">tua linha está no telão e o badge está na tua carteira.</span></p>
-        <div class="code bare" style="margin-top:clamp(10px,1.6vh,18px)"><pre>cast send $UFSC_BUILDERS "register(string,address)" "your team" 0xYourToken</pre></div>
+        <div class="code bare" style="margin-top:clamp(10px,1.6vh,18px)"><pre>make register NAME="Robo Devs"</pre></div>
       </div>
       <div>
         <div class="cd" data-cd>05:00</div>
@@ -819,6 +819,8 @@ body.presenter #presbtn{display:none}
     </div>
   </div>
   <template class="note">
+    <p><strong>O <span class="mono">make register</span> do slide é o mesmo <span class="mono">register</span> do Etherscan</strong> — só que o endereço do token ele lê do <span class="mono">broadcast/</span> do deploy deles, então não tem nada pra copiar. Por baixo é <span class="mono">cast send $UFSC_BUILDERS "register(string,address)" "&lt;nome&gt;" &lt;token&gt;</span>; mostra isso se alguém perguntar o que o make esconde.</p>
+
     <p><strong>Por que Etherscan e não Remix:</strong> o <span class="mono">Add Contract</span> do Remix precisa da ABI — eles teriam que carregar e compilar o <span class="mono">UFSCBuilders.sol</span> antes. São mais três passos e um ponto de falha pra cada pessoa da sala. O contrato está verificado, então o Etherscan monta o formulário sozinho, com os campos já rotulados.</p>
     <p><strong>Repara no botão <span class="mono">Simulate</span>, do lado do Write.</strong> Ele roda a chamada sem gastar gás e mostra se ia reverter. Mostra isso com o nome vazio: volta <span class="mono">NameEmpty</span>. É custom error com nome legível, de graça, antes de pagar.</p>
 
