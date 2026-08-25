@@ -1,6 +1,20 @@
 <!doctype html>
+<html data-theme="dark" data-lang="en">
 <meta charset="utf-8">
 <title>UFSCBuilders</title>
+<script>
+/* Applied before the stylesheet paints so the projector never flashes the
+   wrong theme. Keys are shared with deck.html: ufsc.theme / ufsc.lang. */
+(function () {
+  var d = document.documentElement;
+  try {
+    var th = localStorage.getItem('ufsc.theme');
+    if (th === 'light' || th === 'dark') d.setAttribute('data-theme', th);
+    var lg = localStorage.getItem('ufsc.lang');
+    if (lg === 'en' || lg === 'pt') d.setAttribute('data-lang', lg);
+  } catch (e) { /* private mode: defaults are fine */ }
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -10,6 +24,24 @@
   --ink:#E9EDF4;--ink-2:#9AA5B8;--ink-3:#616D80;
   --accent:#5B9CF8;--good:#57C99A;--warn:#F2A33C;
 }
+/* Light theme: only the tokens are redefined, plus the handful of colours
+   that were hard-coded for a near-black board and go invisible on white. */
+html[data-theme="light"]{
+  --ground:#F5F7FA;--ground-2:#FFFFFF;--line:#CDD5E1;
+  --ink:#0C1119;--ink-2:#3F4A5C;--ink-3:#65728A;
+  --accent:#1A5FD0;--good:#0E7A50;--warn:#A4500A;
+}
+html[data-theme="light"] .field.tok code{color:#1A5FD0}
+html[data-theme="light"] .field.bdg code{color:#6D2FB8}
+html[data-theme="light"] .field a:hover code,
+html[data-theme="light"] .field a:focus-visible code{color:#000}
+html[data-theme="light"] li.fresh{background:rgba(14,122,80,.08)}
+html[data-theme="light"] .badge-img{background:#EEF2F8}
+html[data-theme="light"] .setup button{color:#fff}
+html[data-theme="light"] .cbtn{opacity:.6}
+/* Two spellings live in the markup; the stylesheet picks one. */
+html[data-lang="en"] .i18n[lang="pt"],
+html[data-lang="pt"] .i18n[lang="en"]{display:none}
 *{box-sizing:border-box}
 body{
   margin:0;min-height:100vh;background:var(--ground);color:var(--ink);
@@ -33,11 +65,13 @@ h1{font-family:'Archivo',sans-serif;font-weight:800;letter-spacing:-.02em;
   color:var(--ink-3);text-decoration:none;letter-spacing:.04em;margin-top:6px}
 #src:hover{color:var(--accent);text-decoration:underline}
 #src::after{content:' · verified source';color:var(--ink-3);letter-spacing:.12em}
+html[data-lang="pt"] #src::after{content:' · fonte verificada'}
 body.localchain #src{display:none}
-#change{position:fixed;bottom:14px;right:14px;opacity:.45;background:none;border:1px solid var(--line);
+#corner{position:fixed;bottom:14px;right:14px;z-index:20;display:flex;gap:6px}
+.cbtn{opacity:.45;background:none;border:1px solid var(--line);
   color:var(--ink-3);border-radius:6px;padding:4px 10px;cursor:pointer;
   font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em}
-#change:hover{color:var(--accent);border-color:var(--accent);opacity:1}
+.cbtn:hover{color:var(--accent);border-color:var(--accent);opacity:1}
 .badge-img{position:absolute;top:clamp(14px,1.6vh,20px);right:clamp(14px,1.6vh,20px);
   width:clamp(56px,5.4vw,96px);height:auto;border-radius:10px;
   border:1px solid var(--line);background:var(--ground-2)}
@@ -94,25 +128,30 @@ li.fresh{border-color:var(--good);background:rgba(87,201,154,.09)}
 
 <div class="setup" id="setup"><div class="box">
   <h1>UFSCBuilders</h1>
-  <p>Paste the deployed <code>UFSCBuilders</code> address. Saved locally, so you only do this once.</p>
-  <label for="addr">UFSCBuilders contract address</label>
+  <p><span class="i18n" lang="en">Paste the deployed <code>UFSCBuilders</code> address. Saved locally, so you only do this once.</span><span class="i18n" lang="pt">Cole o endereço do contrato <code>UFSCBuilders</code>. Fica salvo aqui, então você faz isso só uma vez.</span></p>
+  <label for="addr"><span class="i18n" lang="en">UFSCBuilders contract address</span><span class="i18n" lang="pt">endereço do contrato UFSCBuilders</span></label>
   <input id="addr" placeholder="0x…" autocomplete="off" spellcheck="false">
-  <label for="rpc">Sepolia RPC</label>
+  <label for="rpc"><span class="i18n" lang="en">Sepolia RPC</span><span class="i18n" lang="pt">RPC da Sepolia</span></label>
   <input id="rpc" value="https://ethereum-sepolia-rpc.publicnode.com" spellcheck="false">
-  <label for="exp">Explorer base</label>
+  <label for="exp"><span class="i18n" lang="en">Explorer base</span><span class="i18n" lang="pt">base do explorer</span></label>
   <input id="exp" value="https://sepolia.etherscan.io" spellcheck="false">
-  <button id="go">Start the board</button>
+  <button id="go"><span class="i18n" lang="en">Start the board</span><span class="i18n" lang="pt">Começar o telão</span></button>
 </div></div>
 
 <header>
   <h1>UFSCBuilders</h1>
-  <div class="count"><span id="n">0</span><small>BUILDERS ON THE BOARD</small></div>
-  <a id="src" href="#" target="_blank" rel="noopener" title="fonte verificada no Etherscan"></a>
-  <span id="local">local chain — explorer links off</span>
+  <div class="count"><span id="n">0</span><small><span class="i18n" lang="en">BUILDERS ON THE BOARD</span><span class="i18n" lang="pt">NO QUADRO</span></small></div>
+  <a id="src" href="#" target="_blank" rel="noopener"></a>
+  <span id="local"><span class="i18n" lang="en">local chain — explorer links off</span><span class="i18n" lang="pt">chain local — sem links de explorer</span></span>
   <div id="status">connecting</div>
-  <button id="change" type="button" title="apontar para outro contrato">change</button>
 </header>
-<ul id="list"><li class="empty">Waiting for the first registration…</li></ul>
+<ul id="list"><li class="empty"><span class="i18n" lang="en">Waiting for the first registration…</span><span class="i18n" lang="pt">Aguardando o primeiro registro…</span></li></ul>
+
+<div id="corner">
+  <button id="theme" class="cbtn" type="button">light</button>
+  <button id="lang" class="cbtn" type="button">PT</button>
+  <button id="change" class="cbtn" type="button">change</button>
+</div>
 
 <script>
 (function () {
@@ -126,6 +165,80 @@ li.fresh{border-color:var(--good);background:rgba(87,201,154,.09)}
   var listEl = document.getElementById('list');
   var statusEl = document.getElementById('status');
   var nEl = document.getElementById('n');
+  var themeBtn = document.getElementById('theme');
+  var langBtn = document.getElementById('lang');
+  var changeBtn = document.getElementById('change');
+  var root = document.documentElement;
+
+  /* ---- strings that are built in JS, so the stylesheet cannot swap them ---- */
+  var T = {
+    en: {
+      wallet: 'wallet', token: 'token', badge: 'badge', notYet: 'not yet',
+      connecting: 'connecting', live: 'live', rpcErr: 'rpc error — ',
+      change: 'change', toLight: 'light', toDark: 'dark', otherLang: 'PT',
+      changeTitle: 'point at another contract',
+      srcTitle: 'verified source on Etherscan',
+      themeTitle: 'theme (D)', langTitle: 'language (P)',
+      badAddr: 'That is not a contract address.'
+    },
+    pt: {
+      wallet: 'carteira', token: 'token', badge: 'badge', notYet: 'ainda não',
+      connecting: 'conectando', live: 'ao vivo', rpcErr: 'erro rpc — ',
+      change: 'trocar', toLight: 'claro', toDark: 'escuro', otherLang: 'EN',
+      changeTitle: 'apontar para outro contrato',
+      srcTitle: 'fonte verificada no Etherscan',
+      themeTitle: 'tema (D)', langTitle: 'idioma (P)',
+      badAddr: 'Isso não é um endereço de contrato.'
+    }
+  };
+  function lang() { return root.getAttribute('data-lang') === 'pt' ? 'pt' : 'en'; }
+  function theme() { return root.getAttribute('data-theme') === 'light' ? 'light' : 'dark'; }
+  function t(k) { return T[lang()][k]; }
+
+  // The status line is the one label JS owns end to end, so its current state
+  // is remembered and re-rendered whenever the language flips.
+  var statusKind = 'connecting', statusMsg = '';
+  function setStatus(kind, msg) {
+    if (kind) { statusKind = kind; statusMsg = msg || ''; }
+    if (statusKind === 'live') { statusEl.textContent = t('live'); statusEl.className = 'live'; }
+    else if (statusKind === 'err') { statusEl.textContent = t('rpcErr') + statusMsg; statusEl.className = 'err'; }
+    else { statusEl.textContent = t('connecting'); statusEl.className = ''; }
+  }
+
+  function syncControls() {
+    themeBtn.textContent = theme() === 'dark' ? t('toLight') : t('toDark');
+    themeBtn.title = t('themeTitle');
+    langBtn.textContent = t('otherLang');
+    langBtn.title = t('langTitle');
+    changeBtn.textContent = t('change');
+    changeBtn.title = t('changeTitle');
+    document.getElementById('src').title = t('srcTitle');
+    setStatus();
+  }
+  function applyTheme(v) {
+    root.setAttribute('data-theme', v);
+    try { localStorage.setItem('ufsc.theme', v); } catch (e) {}
+    syncControls();
+  }
+  function applyLang(v) {
+    root.setAttribute('data-lang', v);
+    try { localStorage.setItem('ufsc.lang', v); } catch (e) {}
+    syncControls();
+    // poll() skips a repaint when the payload has not changed, so a language
+    // flip has to force one from the payload we already hold.
+    if (lastRaw) render(decode(lastRaw));
+  }
+  themeBtn.addEventListener('click', function () { applyTheme(theme() === 'dark' ? 'light' : 'dark'); });
+  langBtn.addEventListener('click', function () { applyLang(lang() === 'pt' ? 'en' : 'pt'); });
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var tag = (e.target && e.target.tagName) || '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    var k = (e.key || '').toLowerCase();
+    if (k === 'd') { e.preventDefault(); applyTheme(theme() === 'dark' ? 'light' : 'dark'); }
+    else if (k === 'p') { e.preventDefault(); applyLang(lang() === 'pt' ? 'en' : 'pt'); }
+  });
+
   // Defaults are the registry deployed for this class, so the board works the
   // moment it opens. localStorage still wins, so pasting another address in
   // the setup box overrides them and survives a reload.
@@ -135,7 +248,8 @@ li.fresh{border-color:var(--good);background:rgba(87,201,154,.09)}
   // points the board at another contract - and a trap when the default changes
   // under a browser that still remembers a local anvil run from last week. So
   // stamp which default the stored values were saved against: a new default
-  // means the stored ones are stale, and they go.
+  // means the stored ones are stale, and they go. Only the sr.* keys are
+  // touched here; ufsc.theme / ufsc.lang are a separate namespace on purpose.
   if (localStorage.getItem('sr.def') !== DEF_ADDR) {
     localStorage.removeItem('sr.addr');
     localStorage.removeItem('sr.rpc');
@@ -145,6 +259,8 @@ li.fresh{border-color:var(--good);background:rgba(87,201,154,.09)}
   var CFG = { addr: localStorage.getItem('sr.addr') || DEF_ADDR, rpc: localStorage.getItem('sr.rpc') || DEF_RPC, exp: localStorage.getItem('sr.exp') || 'https://sepolia.etherscan.io' };
   var known = {};
   var first = true;
+
+  syncControls();
 
   function loadBadgeImage() {
     fetch(CFG.rpc, {
@@ -186,6 +302,7 @@ li.fresh{border-color:var(--good);background:rgba(87,201,154,.09)}
     var src = document.getElementById('src');
     src.href = CFG.exp + '/address/' + CFG.addr + '#code';
     src.textContent = CFG.addr;
+    src.title = t('srcTitle');
     setup.style.display = 'none';
     // Every badge shares one image, so this is a single call for the whole
     // board. Doing it here means the picture is on the projector even when an
@@ -196,14 +313,14 @@ li.fresh{border-color:var(--good);background:rgba(87,201,154,.09)}
     setInterval(poll, 5000);
   }
 
-  document.getElementById('change').addEventListener('click', function () {
+  changeBtn.addEventListener('click', function () {
     setup.style.display = '';
   });
 
   document.getElementById('go').addEventListener('click', function () {
     var a = document.getElementById('addr').value.trim();
     var r = document.getElementById('rpc').value.trim();
-    if (!/^0x[0-9a-fA-F]{40}$/.test(a)) { alert('That is not a contract address.'); return; }
+    if (!/^0x[0-9a-fA-F]{40}$/.test(a)) { alert(t('badAddr')); return; }
     CFG.addr = a; CFG.rpc = r;
     CFG.exp = document.getElementById('exp').value.trim().replace(/\/$/, '');
     localStorage.setItem('sr.addr', a); localStorage.setItem('sr.rpc', r);
@@ -276,12 +393,10 @@ li.fresh{border-color:var(--good);background:rgba(87,201,154,.09)}
         pendingImage = false;
         render(decode(j.result));
       }
-      statusEl.textContent = 'live';
-      statusEl.className = 'live';
+      setStatus('live');
     })
     .catch(function (err) {
-      statusEl.textContent = 'rpc error — ' + err.message;
-      statusEl.className = 'err';
+      setStatus('err', err.message);
     });
   }
 
@@ -303,12 +418,12 @@ li.fresh{border-color:var(--good);background:rgba(87,201,154,.09)}
           body = '<a href="' + CFG.exp + '/nft/' + CFG.addr + '/' + id +
                  '" target="_blank" rel="noopener">' + body + '</a>';
         }
-        return '<span class="field bdg"><span>badge</span>' + body + '</span>';
+        return '<span class="field bdg"><span>' + t('badge') + '</span>' + body + '</span>';
       }
       function link(label, a, cls) {
         if (!a || a === ZERO) {
           return '<span class="field ' + cls + '"><span>' + label +
-                 '</span><code class="pending">not yet</code></span>';
+                 '</span><code class="pending">' + t('notYet') + '</code></span>';
         }
         return '<span class="field ' + cls + '"><span>' + label + '</span>' +
                '<a href="' + CFG.exp + '/address/' + a + '" target="_blank" rel="noopener">' +
@@ -319,8 +434,8 @@ li.fresh{border-color:var(--good);background:rgba(87,201,154,.09)}
           'onerror="this.onerror=null;this.src=this.src.replace(\'amethyst-hidden-lark-905.mypinata.cloud\',\'ipfs.io\')">' : '') +
         '<span class="rank">#' + (entries.length - k) + '</span>' +
         '<span class="name"></span>' +
-        link('wallet', e.who, 'wal') +
-        link('token', e.token, 'tok') +
+        link(t('wallet'), e.who, 'wal') +
+        link(t('token'), e.token, 'tok') +
         badgeLink(e.badge);
       li.querySelector('.name').textContent = e.name;   // never innerHTML: student input
       listEl.appendChild(li);
