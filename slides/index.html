@@ -4,6 +4,21 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 
+<script>
+/* Painted before the first frame so a light-theme viewer never gets
+   flashed with the dark ground. Default is dark / en on purpose. */
+(function () {
+  var d = document.documentElement, t = 'dark', l = 'en';
+  try {
+    if (localStorage.getItem('ufsc.theme') === 'light') t = 'light';
+    if (localStorage.getItem('ufsc.lang') === 'pt') l = 'pt';
+  } catch (e) {}
+  d.setAttribute('data-theme', t);
+  d.setAttribute('data-lang', l);
+  d.setAttribute('lang', l === 'pt' ? 'pt-BR' : 'en');
+})();
+</script>
+
 <style>
 /* ---------------------------------------------------------------
    Deliberately single-theme. A lecture deck is projected in a dark
@@ -25,6 +40,19 @@
   --good:#57C99A;
   --bad:#E56A5A;
 
+  /* derived colours that used to be literals further down the sheet.
+     They live here so the light theme can restate them in one block. */
+  --ink-hi:#FFFFFF;
+  --line-soft:rgba(36,45,59,.5);
+  --accent-line:rgba(91,156,248,.35);
+  --good-soft:rgba(87,201,154,.10);
+  --veil:rgba(8,10,14,.97);
+  --t-key:#C792EA;
+  --t-typ:#7FD1E8;
+  --t-str:#A5D6A7;
+  --t-num:#F2A33C;
+  --t-fn:#8AB4F8;
+
   --f-display:'Archivo','Helvetica Neue',Arial,sans-serif;
   --f-body:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
   --f-mono:'IBM Plex Mono','SFMono-Regular',Menlo,Consolas,monospace;
@@ -32,6 +60,45 @@
   --pad:clamp(28px,4.4vw,84px);
   --rail:clamp(46px,4.6vw,74px);
 }
+
+/* ---------------------------------------------------------------
+   Light theme. Only the tokens are restated - not one rule below is
+   rewritten. Default stays dark: a lecture deck is projected.
+   --------------------------------------------------------------- */
+html[data-theme="light"]{
+  --ground:#FBFBFD;
+  --ground-2:#EFF2F7;
+  --surface:#FFFFFF;
+  --line:#D3DAE6;
+  --ink:#131820;
+  --ink-2:#48546A;
+  --ink-3:#626C7D;
+  --accent:#1A5FCC;
+  --accent-soft:rgba(26,95,204,.10);
+  --warn:#8A5200;
+  --warn-soft:rgba(138,82,0,.13);
+  --good:#0F6B44;
+  --bad:#C0392B;
+
+  --ink-hi:#0B0E13;
+  --line-soft:rgba(160,172,190,.55);
+  --accent-line:rgba(26,95,204,.40);
+  --good-soft:rgba(15,107,68,.10);
+  --veil:rgba(251,251,253,.97);
+  --t-key:#7B2FBE;
+  --t-typ:#0A6E86;
+  --t-str:#1F7A3D;
+  --t-num:#8A5200;
+  --t-fn:#1A5FCC;
+}
+/* The QR plate is white by design. On a white ground it needs an edge. */
+html[data-theme="light"] .qr{border:1px solid var(--line)}
+
+/* ---------- language ----------
+   display:none, never visibility - a hidden twin must not leave a hole.
+   Nested markup is duplicated inside each twin, so layout never shifts. */
+html[data-lang="en"] .i18n[lang="pt"],
+html[data-lang="pt"] .i18n[lang="en"]{display:none}
 
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -112,7 +179,7 @@ h2{
 .big u{text-decoration:none;color:var(--warn)}
 p{margin:0 0 1em;max-width:66ch}
 p:last-child{margin-bottom:0}
-strong{font-weight:600;color:#fff}
+strong{font-weight:600;color:var(--ink-hi)}
 .dim{color:var(--ink-2)}
 .mono{font-family:var(--f-mono)}
 
@@ -134,6 +201,9 @@ ul.points.warn li .k{color:var(--warn)}
   overflow:auto;font-family:var(--f-mono);
   font-size:clamp(.78rem,1.06vw,1.08rem);line-height:1.62;
 }
+/* Assinaturas de interface sao longas e num projetor ninguem rola.
+   So este slide usa a fonte menor. */
+.code.narrow{font-size:clamp(.55rem,.74vw,.84rem)}
 .code pre{margin:0;padding:clamp(14px,1.8vh,22px) 0}
 .code .ln{display:block;padding:0 clamp(16px,2vw,26px);white-space:pre;position:relative}
 .code .ln.mark{background:var(--warn-soft);box-shadow:inset 3px 0 0 var(--warn)}
@@ -142,12 +212,12 @@ ul.points.warn li .k{color:var(--warn)}
   display:inline-block;width:2.2em;color:var(--ink-3);
   user-select:none;font-size:.85em;
 }
-.t-key{color:#C792EA}
-.t-typ{color:#7FD1E8}
-.t-str{color:#A5D6A7}
-.t-num{color:#F2A33C}
+.t-key{color:var(--t-key)}
+.t-typ{color:var(--t-typ)}
+.t-str{color:var(--t-str)}
+.t-num{color:var(--t-num)}
 .t-com{color:var(--ink-3);font-style:italic}
-.t-fn{color:#8AB4F8}
+.t-fn{color:var(--t-fn)}
 
 .cap{
   font-family:var(--f-mono);font-size:clamp(.72rem,.92vw,.92rem);
@@ -199,7 +269,8 @@ table.grid td.mono{font-family:var(--f-mono);color:var(--accent)}
 /* ---------- chrome ---------- */
 .hud{
   position:fixed;right:clamp(16px,2vw,30px);bottom:clamp(12px,1.6vh,22px);
-  display:flex;gap:clamp(12px,1.6vw,22px);align-items:baseline;
+  display:flex;flex-wrap:wrap;justify-content:flex-end;
+  gap:clamp(12px,1.6vw,22px);align-items:baseline;
   font-family:var(--f-mono);font-size:clamp(11px,.86vw,14px);
   color:var(--ink-3);z-index:40;letter-spacing:.08em;
   font-variant-numeric:tabular-nums;
@@ -209,12 +280,16 @@ table.grid td.mono{font-family:var(--f-mono);color:var(--accent)}
 #clock:hover{background:var(--surface)}
 #clockreset{cursor:pointer;user-select:none;color:var(--ink-3);padding:4px 6px;margin:-4px -2px;border-radius:6px}
 #clockreset:hover{background:var(--surface);color:var(--ink-2)}
+#langtog,#themetog{cursor:pointer;user-select:none;color:var(--ink-3);
+  padding:4px 8px;margin:-4px 0;border-radius:6px;letter-spacing:.14em}
+#langtog:hover,#themetog:hover,
+#langtog:focus-visible,#themetog:focus-visible{background:var(--surface);color:var(--ink-2)}
 #clock.run{color:var(--good)}
 #clock.late{color:var(--warn)}
 #clock.off{opacity:.45}
 
 .overlay{
-  position:fixed;inset:0;background:rgba(8,10,14,.97);z-index:60;
+  position:fixed;inset:0;background:var(--veil);z-index:60;
   display:none;padding:clamp(28px,4vw,64px);overflow:auto;
 }
 .overlay.on{display:block}
@@ -259,7 +334,7 @@ kbd{
 .keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
   gap:14px;max-width:900px;margin:26px auto 0;color:var(--ink-2)}
 
-a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(91,156,248,.35)}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent-line)}
 a:hover{border-bottom-color:var(--accent)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
 button{font:inherit}
@@ -282,7 +357,7 @@ button{font:inherit}
 .opts li .l{font-family:var(--f-mono);color:var(--ink-3);flex:none;font-weight:500}
 .slide.revealed .opts li{opacity:.38}
 .slide.revealed .opts li[data-correct]{opacity:1;border-color:var(--good);
-  background:rgba(87,201,154,.1)}
+  background:var(--good-soft)}
 .slide.revealed .opts li[data-correct] .l{color:var(--good)}
 .why{margin-top:clamp(16px,2.4vh,28px);color:var(--ink-2);
   font-size:clamp(.88rem,1.15vw,1.12rem);max-width:74ch;
@@ -295,22 +370,25 @@ button{font:inherit}
 .ov-card.opt b{color:var(--warn)}
 .words-lg{display:flex;flex-wrap:wrap;gap:clamp(10px,1.4vw,18px);list-style:none;margin:0;padding:0}
 /* ---------- the two tables ---------- */
-.tbls{display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,3vw,52px);align-items:start}
+/* minmax(0,1fr), nao 1fr: uma trilha 1fr nao encolhe abaixo da largura do
+   conteudo, entao linhas longas de codigo empurram a coluna vizinha pra fora
+   da tela e o overflow-x do .code nunca chega a agir. */
+.tbls{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(20px,3vw,52px);align-items:start}
 @media (max-width:900px){.tbls{grid-template-columns:1fr}}
 .tbl-h{font-family:var(--f-mono);font-size:clamp(10px,.82vw,13px);letter-spacing:.18em;
   text-transform:uppercase;color:var(--accent);margin-bottom:10px}
-.tbl-h.two{color:#C792EA}
+.tbl-h.two{color:var(--t-key)}
 table.demo{border-collapse:collapse;width:100%;font-family:var(--f-mono);
   font-size:clamp(.82rem,1.15vw,1.2rem)}
 table.demo th{text-align:left;font-weight:500;color:var(--ink-3);
   font-size:.8em;letter-spacing:.1em;text-transform:uppercase;
   padding:0 14px 8px 0;border-bottom:1px solid var(--line)}
 table.demo td{padding:clamp(5px,.9vh,9px) 14px clamp(5px,.9vh,9px) 0;
-  border-bottom:1px solid rgba(36,45,59,.5);color:var(--ink)}
+  border-bottom:1px solid var(--line-soft);color:var(--ink)}
 table.demo td.num{text-align:right;font-variant-numeric:tabular-nums;color:var(--accent)}
 table.demo tr.sum td{border-bottom:0;border-top:1px solid var(--line);
   color:var(--ink-2);padding-top:12px}
-table.demo tr.sum td.num{color:#fff;font-weight:500}
+table.demo tr.sum td.num{color:var(--ink-hi);font-weight:500}
 table.demo td.meta{color:var(--ink-3)}
 /* The name is a label for humans. The address is what the mapping is keyed on.
    Showing both, with the address visually secondary, makes that readable. */
@@ -329,8 +407,8 @@ table.demo td .adr{color:var(--ink-3);font-size:.86em}
   line-height:1.55;max-width:100%;overflow-x:auto}
 .hop .k{color:var(--ink-3)}
 .hop .v{color:var(--accent)}
-.hop.j .v{color:#A5D6A7}
-.hop.img{color:#C792EA}
+.hop.j .v{color:var(--t-str)}
+.hop.img{color:var(--t-key)}
 .arrow{font-family:var(--f-mono);color:var(--ink-3);
   font-size:clamp(.9rem,1.3vw,1.3rem);padding:6px 0 6px 26px;line-height:1}
 .arrow b{color:var(--warn);font-weight:400;margin-left:12px;
@@ -383,8 +461,8 @@ ol.steps li::before{content:counter(st);position:absolute;left:0;top:.1em;
 .cd-reset:hover,.cd-reset:focus-visible{border-color:var(--ink-3);color:var(--ink-2)}
 
 .lnk{font-family:var(--f-mono);color:var(--accent);text-decoration:none;
-  border-bottom:1px solid rgba(91,156,248,.4)}
-.lnk:hover,.lnk:focus-visible{color:#fff;border-bottom-color:#fff}
+  border-bottom:1px solid var(--accent-line)}
+.lnk:hover,.lnk:focus-visible{color:var(--ink-hi);border-bottom-color:var(--ink-hi)}
 
 /* ---------- QR ---------- */
 .qrs{display:flex;flex-wrap:wrap;gap:clamp(18px,2.4vw,36px);
@@ -413,7 +491,7 @@ body.lean #lean{display:inline}
 <div class="rail">
   <span class="rail-mark">UFSC · ETH FLORIPA</span>
   <span class="rail-prog"><i id="prog"></i></span>
-  <span class="rail-mark">MODULE 02</span>
+  <span class="rail-mark"><span class="i18n" lang="en">MODULE 02</span><span class="i18n" lang="pt">MÓDULO 02</span></span>
 </div>
 
 <main class="deck" id="deck">
@@ -421,8 +499,8 @@ body.lean #lean{display:inline}
 <section class="slide" data-at="0" data-block="" data-title="Título">
   <div class="wrap">
     <div class="eyebrow">Ethereum Builders Tour · Florianópolis · 25.08.2026</div>
-    <h1>Solidity &amp;<br>Token Standards</h1>
-    <p class="sub">Tonight you deploy.</p>
+    <h1><span class="i18n" lang="en">Solidity &amp;<br>Token Standards</span><span class="i18n" lang="pt">Solidity &amp;<br>Padrões de Token</span></h1>
+    <p class="sub"><span class="i18n" lang="en">Tonight you deploy.</span><span class="i18n" lang="pt">Hoje à noite tu deploya.</span></p>
   </div>
   <template class="note">
     <p>Deploy o <span class="mono">Hello</span> ao vivo enquanto fala. Narra três coisas enquanto confirma: rede de teste, aquilo é gás, a carteira assinou.</p>
@@ -434,20 +512,20 @@ body.lean #lean{display:inline}
   <div class="wrap">
     <div class="build">
       <div>
-        <h2>Get a wallet.</h2>
+        <h2><span class="i18n" lang="en">Get a wallet.</span><span class="i18n" lang="pt">Pega uma carteira.</span></h2>
         <ol class="steps">
-          <li><a class="lnk" href="https://rabby.io" target="_blank" rel="noopener">rabby.io</a> → install the extension</li>
-          <li>Create a new seed. <strong>A throwaway one.</strong></li>
-          <li>Settings → <strong>Enable testnets</strong></li>
-          <li>Add <strong>Sepolia</strong>, switch to it</li>
-          <li>Copy your address</li>
+          <li><span class="i18n" lang="en"><a class="lnk" href="https://rabby.io" target="_blank" rel="noopener">rabby.io</a> → install the extension</span><span class="i18n" lang="pt"><a class="lnk" href="https://rabby.io" target="_blank" rel="noopener">rabby.io</a> → instala a extensão</span></li>
+          <li><span class="i18n" lang="en">Create a new seed. <strong>A throwaway one.</strong></span><span class="i18n" lang="pt">Cria uma seed nova. <strong>Uma descartável.</strong></span></li>
+          <li><span class="i18n" lang="en">Settings → <strong>Enable testnets</strong></span><span class="i18n" lang="pt">Nas configurações → <strong>Enable testnets</strong></span></li>
+          <li><span class="i18n" lang="en">Add <strong>Sepolia</strong>, switch to it</span><span class="i18n" lang="pt">Adiciona a <strong>Sepolia</strong> e troca pra ela</span></li>
+          <li><span class="i18n" lang="en">Copy your address</span><span class="i18n" lang="pt">Copia teu endereço</span></li>
         </ol>
-        <p class="done"><b>Done when</b>Rabby says Sepolia, and you have your address on the clipboard.</p>
+        <p class="done"><b><span class="i18n" lang="en">Done when</span><span class="i18n" lang="pt">Pronto quando</span></b><span class="i18n" lang="en">Rabby says Sepolia, and you have your address on the clipboard.</span><span class="i18n" lang="pt">o Rabby mostra Sepolia e teu endereço está na área de transferência.</span></p>
         <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://rabby.io" target="_blank" rel="noopener"><img class="qr" alt="QR for https://rabby.io" data-qr="https://rabby.io" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiCAIAAADS3EjhAAAESElEQVR42u3dQWokMQxA0XSo5cBs5v4nnM3A7J0LhCJBkSW53tsn3e30xwUR9mut9QZkercEIDOQGSAzkBnIDJAZyAyQGcgMZAbIDGQGMgNkBjIDZAYyA5kBX3FFfvjX7z+HLcf/f3+TfnNkre7fVd5fIbIavht2M/DQCDIDZAYyA5kBMgOZATKDza68X503URERmU64/9mqCZKJsxrnfTfsZuChEWQGyAxkBjKzBCAzkBkgMyh3Vb1wzxMs8lSd5xGZIOk59TLxu2E3A5mBzACZgcxAZoDMQGaAzGCDyxJ0UDWdcN69LXYzkBkgM5AZIDOQGcgMkBnIDB7LFMg35J3n0fNWl56nqtjNAJmBzEBmgMxAZiAzQGYgM+BTZVMgT5swmDjnUXUjzHnfDbsZyAxkBsgMZAYyA2QGMgNkBhskToGcd9tIZCoib6Ii74QS3w27GcgMkBnIDGQGyAxkBjIDZAaDvNZaVuGLJs4u9LzFxm4GyAxkBsgMZAYyA2QGMgOZAT8udBZI1Y0hPd/z0z5v1QRJ1f04djPw0AgyA2QGMgNkBjIDmQEyg+ZCZ4FUnY0xcd6iajV6nvbR81QVUyDgoRGQGcgMZAbIDGQGMgNkBqMlToH0PGfiafMHPde5anKlaibGbgYeGkFmgMxAZiAzQGYgM0BmsEHoRpi8OY+q3zzxtpGe65y3VhMnhOxm4KERZAbIDGQGMgNkBjIDZAYbhKZA8v5r3nNGJPKbJ84umKexm4HMAJmBzEBmgMxAZiAzQGYwSOKNMPd63tzRc3bhvFts8mZxer6u3Qw8NILMAJmBzEBmgMxAZoDMYIPEKZCJcx6R99zzzpeIiZMrPb91djPw0AgyA2QGMgOZATIDmQEygw2uqhfueZ9Iz1M3er6rvHWO/GzPW2zsZuChEWQGyAxkBjIDZAYyA2QGG5RNgUT+437erEbknImqeYuqlex52ofdDDw0gswAmYHMQGaWAGQGMgNkBuVCN8I8Tc8Jg6rPm/eJet68YzcDmYHMAJmBzACZgcxAZoDMoLnQWSATbyq5dz9hcN5NJSY59rxnuxl4aASZATIDmYHMAJmBzACZwQaJN8JM/E9/1efNmz+omtSZeGKH3QxkBsgMZAYyA2QGMgOZATKD0a6qF554vkXkE1W9q7xTRnqeBNPzr2A3A5mBzACZgcxAZoDMQGaAzGCDyxL8lMi8Rd6sRs8zOfLeVdXdOnYz8NAIMgNkBjIDmVkCkBnIDJAZlDMFMkBksuFpZ67kraTdDDw0gswAmYHMAJmBzEBmgMygubIpkJ5nVETk3UUyce7hvOkTuxnIDGQGyAxkBsgMZAYyA2QGzSVOgVTdvlH1iXreRXIv75SRvFmNqte1m4GHRpAZIDOQGSAzkBnIDJAZNPdaa1kFsJuBzACZgcxAZoDMQGYgM0BmIDNAZiAzkBkgM5AZIDOQGcgMkBnU+wDe/mt0rfnDmgAAAABJRU5ErkJggg=="></a><a class="qr-cap" href="https://rabby.io" target="_blank" rel="noopener">rabby.io</a></div></div>
       </div>
       <div>
         <div class="cd" data-cd>10:00</div>
-        <div class="cd-row"><span class="cd-lab">build time</span><button class="cd-reset" data-reset type="button">reset</button></div>
+        <div class="cd-row"><span class="cd-lab">build time</span><button class="cd-reset" data-reset type="button"><span class="i18n" lang="en">reset</span><span class="i18n" lang="pt">zerar</span></button></div>
       </div>
     </div>
   </div>
@@ -462,19 +540,19 @@ body.lean #lean{display:inline}
   <div class="wrap">
     <div class="build">
       <div>
-        <h2>The repo.</h2>
+        <h2><span class="i18n" lang="en">The repo.</span><span class="i18n" lang="pt">O repo.</span></h2>
         <ol class="steps">
           <li><a class="lnk" href="https://remix.ethereum.org" target="_blank" rel="noopener">remix.ethereum.org</a> · <span class="mono">UFSCBuilders.sol</span> — struct, mapping, event</li>
           <li><span class="mono">Token.sol</span> — ERC-20</li>
           <li><span class="mono">Badge.sol</span> — ERC-721</li>
-          <li><span class="mono">test/</span> — 12 tests, 2 of them fuzzed</li>
+          <li><span class="i18n" lang="en"><span class="mono">test/</span> — 12 tests, 2 of them fuzzed</span><span class="i18n" lang="pt"><span class="mono">test/</span> — 12 testes, 2 deles com fuzz</span></li>
         </ol>
-        <p class="done"><b>Done when</b>You can say what each file does.</p>
+        <p class="done"><b><span class="i18n" lang="en">Done when</span><span class="i18n" lang="pt">Pronto quando</span></b><span class="i18n" lang="en">You can say what each file does.</span><span class="i18n" lang="pt">tu consegue dizer o que cada arquivo faz.</span></p>
         <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://github.com/kamikazebr/ufsc-builders" target="_blank" rel="noopener"><img class="qr" alt="QR for https://github.com/kamikazebr/ufsc-builders" data-qr="https://github.com/kamikazebr/ufsc-builders" src="data:image/png;base64,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"></a><a class="qr-cap" href="https://github.com/kamikazebr/ufsc-builders" target="_blank" rel="noopener">github.com/kamikazebr/ufsc-builders</a></div><div class="qr-item"><a class="qr-img" href="https://remix.ethereum.org" target="_blank" rel="noopener"><img class="qr" alt="QR for https://remix.ethereum.org" data-qr="https://remix.ethereum.org" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiCAIAAADS3EjhAAAETUlEQVR42u3dQWrjQBCG0ThoGZjN3P+EsxnIXrlAEAnt0l/Vfm8fO27rowUuWo/zPN+ASu+WAGQGMgNkBjIDmQEyA5kBMgOZgcwAmYHMQGaAzEBmgMxAZiAz4CeOlT/++PN3s+X4/P8vshrX73v9yit/23M19rs27GbgphFkBsgMZAYyA2QGMgNkBjc46l565VfzOivTCT0nGybOW+x3bdjNwE0jyAyQGcgMZGYJQGYgM0BmEHek3rjuF/e6CYOeJ4WkvqO6/2ritWE3AzeNIDNAZiAzkJklAJmBzACZQdxhCZ4ldcpI3dNkep7YYTcDZAYyA5kBMgOZgcwAmYHMgG+ZAvmFied51M2IYDcDmYHMAJmBzACZgcxAZoDMoJXYFMjECYOViYr9nnLi2rCbgcxAZoDMQGaAzEBmIDNAZtBK4RRI3dxDysrJGXV/2/N/frVrw24GMgOZATIDmYHMLAHIDGQGyAziHud5WoWn6DkjUjdf4nkxdjOQGcgMkBnIDJAZyAxkBsgMWlk6C2S/uYe6yYaep1/0nORInUFStxp2M3DTCDIDZAYyA5kBMgOZATKDGxSeBWJW41mft+59e65GSt1VZzcDN40gM0BmIDOQGSAzkBkgM7hB4VkgdXrOl+z3dJXU5MrEa9JuBjIDmQEyA5mBzCwByAxkBsgM4grPArk28fSLnudqpEx8MosnwoCbRkBmIDOQGSAzkBkgM5AZbGxpCqTu9Iv9pjE8EabDtZE6r8VuBm4aQWaAzEBmIDNAZiAzQGZwg6Unwqz84j7xt/yU1DqnPlHPlbSbgZtGkBkgM5AZIDOQGcgMkBk0V3gWSOoX9xUTT+yo46yXZ/1XdjNw0wgyA2QGMgOZATIDmQEygxssTYFcq5sR6TlhUDfJkZps6Pl5J36DdjNw0wgyA2QGMgOZATIDmQEygxssPRFm4pRAzyek1Kk73SR1msvKN5j6fu1mIDOQGSAzkBnIDJAZyAyQGdxgaQqk7jf1ia+cmi9JTTZMPPuk7hk3djNw0wgyA2QGMgOZWQKQGcgMkBnEFZ4FMtHKSRLXq/FqZ5C82ue1m4HMQGaAzEBmIDNLADIDmQEyg7ij7qV7/tJfN7mSOu2j5yzOq8152M1AZiAzQGYgM5CZJQCZgcwAmUHckXrjidMYK+db9Dwbo+50k55S62w3A5mBzACZgcxAZoDMQGaAzOAGhyX4udScx8RXXnnfulc2BQJuGgGZgcxAZoDMQGaAzEBmsDFTIL+QOv2ibvpk4hkkPc96sZuBm0aQGSAzkBnIzBKAzEBmgMwgLjYFkpo/qPufU+db1On51J6Jz+Wxm4GbRpAZIDOQGcgMkBnIDJAZ3KBwCiQ1uzDxE+0357HyvqkJIWeBgJtGQGYgM5AZIDOQGcgMkBmM9jjP0yqA3QxkBsgMZAYyA2QGMgOZATIDmQEyA5mBzACZgcwAmYHMQGaAzCDvCy+pjfwxLVFDAAAAAElFTkSuQmCC"></a><a class="qr-cap" href="https://remix.ethereum.org" target="_blank" rel="noopener">remix.ethereum.org</a></div></div>
       </div>
       <div>
         <div class="cd" data-cd>15:00</div>
-        <div class="cd-row"><span class="cd-lab">build time</span><button class="cd-reset" data-reset type="button">reset</button></div>
+        <div class="cd-row"><span class="cd-lab">build time</span><button class="cd-reset" data-reset type="button"><span class="i18n" lang="en">reset</span><span class="i18n" lang="pt">zerar</span></button></div>
       </div>
     </div>
   </div>
@@ -492,27 +570,27 @@ body.lean #lean{display:inline}
 
 <section class="slide" data-at="28" data-block="03 Tabela" data-title="3 · A tabela">
   <div class="wrap">
-    <h2>A token is a table.</h2>
+    <h2><span class="i18n" lang="en">A token is a table.</span><span class="i18n" lang="pt">Um token é uma tabela.</span></h2>
     <div class="tbls">
       <div>
-        <div class="tbl-h">ERC-20 · fungible</div>
+        <div class="tbl-h"><span class="i18n" lang="en">ERC-20 · fungible</span><span class="i18n" lang="pt">ERC-20 · fungível</span></div>
         <table class="demo">
-          <thead><tr><th>holder</th><th>amount</th></tr></thead>
+          <thead><tr><th><span class="i18n" lang="en">holder</span><span class="i18n" lang="pt">titular</span></th><th><span class="i18n" lang="en">amount</span><span class="i18n" lang="pt">quantidade</span></th></tr></thead>
           <tbody>
             <tr><td><span class="who">Fran</span> <span class="adr">0x123…</span></td><td class="num">2</td></tr>
             <tr><td><span class="who">felipe</span> <span class="adr">0x234…</span></td><td class="num">0</td></tr>
             <tr><td><span class="who">marcos</span> <span class="adr">0x345…</span></td><td class="num">10</td></tr>
             <tr><td><span class="who">andreson</span> <span class="adr">0x456…</span></td><td class="num">7</td></tr>
-            <tr class="sum"><td>total supply</td><td class="num">19</td></tr>
+            <tr class="sum"><td><span class="i18n" lang="en">total supply</span><span class="i18n" lang="pt">supply total</span></td><td class="num">19</td></tr>
           </tbody>
         </table>
         <p class="maps">mapping(address =&gt; uint256) <b>public balanceOf</b>;</p>
         <p class="fns">transfer(to, amount)</p>
       </div>
       <div>
-        <div class="tbl-h two">ERC-721 · unique</div>
+        <div class="tbl-h two"><span class="i18n" lang="en">ERC-721 · unique</span><span class="i18n" lang="pt">ERC-721 · único</span></div>
         <table class="demo">
-          <thead><tr><th>id</th><th>owner</th><th>metadata</th></tr></thead>
+          <thead><tr><th>id</th><th><span class="i18n" lang="en">owner</span><span class="i18n" lang="pt">dono</span></th><th><span class="i18n" lang="en">metadata</span><span class="i18n" lang="pt">metadados</span></th></tr></thead>
           <tbody>
             <tr><td class="num">1</td><td><span class="who">Fran</span> <span class="adr">0x123…</span></td><td class="meta">{ … }</td></tr>
             <tr><td class="num">2</td><td><span class="who">felipe</span> <span class="adr">0x234…</span></td><td class="meta">{ … }</td></tr>
@@ -538,20 +616,36 @@ body.lean #lean{display:inline}
 
 <section class="slide" data-at="32" data-block="03b Interface" data-title="3b · A interface">
   <div class="wrap">
-    <h2>The standard is this list.</h2>
+    <h2><span class="i18n" lang="en">The standard is this list.</span><span class="i18n" lang="pt">O padrão é esta lista.</span></h2>
     <div class="tbls">
       <div>
-        <div class="tbl-h">ERC-20 — the whole thing</div>
-        <div class="code"><pre><span class="ln">interface IERC20 {</span><span class="ln">  function <b>totalSupply</b>() external view returns (uint256);</span><span class="ln">  function <b>balanceOf</b>(address) external view returns (uint256);</span><span class="ln">  function <b>transfer</b>(address to, uint256 v) external returns (bool);</span><span class="ln">  function <b>approve</b>(address spender, uint256 v) external returns (bool);</span><span class="ln">  function <b>allowance</b>(address, address) external view returns (uint256);</span><span class="ln">  function <b>transferFrom</b>(address, address, uint256) external returns (bool);</span><span class="ln"> </span><span class="ln">  event <b>Transfer</b>(address indexed, address indexed, uint256);</span><span class="ln">  event <b>Approval</b>(address indexed, address indexed, uint256);</span><span class="ln">}</span></pre></div>
-        <p class="maps">6 functions · 2 events. <b>That is all of it.</b></p>
+        <div class="tbl-h"><span class="i18n" lang="en">ERC-20 — the whole thing</span><span class="i18n" lang="pt">ERC-20 — é isso tudo</span></div>
+        <div class="code narrow"><pre>interface IERC20 {
+  function totalSupply() external view returns (uint256);
+  function balanceOf(address) external view returns (uint256);
+  function transfer(address to, uint256 v) external returns (bool);
+  function approve(address spender, uint256 v) external returns (bool);
+  function allowance(address, address) external view returns (uint256);
+  function transferFrom(address, address, uint256) external returns (bool);
+
+  event Transfer(address indexed, address indexed, uint256);
+  event Approval(address indexed, address indexed, uint256);
+}</pre></div>
+        <p class="maps"><span class="i18n" lang="en">6 functions · 2 events. <b>That is all of it.</b></span><span class="i18n" lang="pt">6 funções · 2 eventos. <b>É isso tudo.</b></span></p>
       </div>
       <div>
-        <div class="tbl-h two">ERC-721 — your badge</div>
-        <div class="code"><pre><span class="ln">interface IERC721 {</span><span class="ln">  function <b>ownerOf</b>(uint256 id) external view returns (address);</span><span class="ln">  function <b>balanceOf</b>(address) external view returns (uint256);</span><span class="ln">  function <b>safeTransferFrom</b>(address, address, uint256) external;</span><span class="ln">  function <b>approve</b>(address, uint256) external;</span><span class="ln">  <span class="dim">// …and tokenURI, from the Metadata extension</span></span><span class="ln">}</span></pre></div>
-        <p class="maps"><b>No image. No name. No JSON.</b> Only <span class="mono">tokenURI</span>, which returns a string.</p>
+        <div class="tbl-h two"><span class="i18n" lang="en">ERC-721 — your badge</span><span class="i18n" lang="pt">ERC-721 — o teu badge</span></div>
+        <div class="code narrow"><pre>interface IERC721 {
+  function ownerOf(uint256 id) external view returns (address);
+  function balanceOf(address) external view returns (uint256);
+  function safeTransferFrom(address, address, uint256) external;
+  function approve(address, uint256) external;
+  // ...and tokenURI, from the Metadata extension
+}</pre></div>
+        <p class="maps"><span class="i18n" lang="en"><b>No image. No name. No JSON.</b> Only <span class="mono">tokenURI</span>, which returns a string.</span><span class="i18n" lang="pt"><b>Sem imagem. Sem nome. Sem JSON.</b> Só <span class="mono">tokenURI</span>, que devolve uma string.</span></p>
       </div>
     </div>
-    <p class="fns" style="margin-top:clamp(12px,1.8vh,20px)"><span class="dim">a token is not a thing you own — it is a contract that answers these questions about you</span></p>
+    <p class="fns" style="margin-top:clamp(12px,1.8vh,20px)"><span class="i18n" lang="en"><span class="dim">a token is not a thing you own — it is a contract that answers these questions about you</span></span><span class="i18n" lang="pt"><span class="dim">um token não é uma coisa que tu tem — é um contrato que responde estas perguntas sobre ti</span></span></p>
   </div>
   <template class="note">
     <p><strong>A frase do slide:</strong> um padrão não é software que tu instala. É uma <strong>lista de assinaturas</strong> que todo mundo concordou em responder. Carteira, exchange e marketplace só sabem chamar essas seis. Qualquer contrato que responda vira "um token" pra eles.</p>
@@ -564,16 +658,16 @@ body.lean #lean{display:inline}
 
 <section class="slide" data-at="35" data-block="03 IPFS" data-title="Metadata &amp; IPFS">
   <div class="wrap">
-    <h2>Where the picture lives</h2>
+    <h2><span class="i18n" lang="en">Where the picture lives</span><span class="i18n" lang="pt">Onde a imagem mora</span></h2>
     <div class="hops">
-      <div class="hop"><span class="k">ownerOf(7)</span> → <span class="v">0x123…</span>&nbsp;&nbsp;<span class="k">on-chain, forever</span></div>
+      <div class="hop"><span class="k">ownerOf(7)</span> → <span class="v">0x123…</span>&nbsp;&nbsp;<span class="i18n" lang="en"><span class="k">on-chain, forever</span></span><span class="i18n" lang="pt"><span class="k">on-chain, pra sempre</span></span></div>
       <div class="arrow">↓</div>
-      <div class="hop j">{ "name": <span class="v">"UFSC Builder #7"</span>, "image": <span class="v">"ipfs://bafy…/badge.png"</span> }<br><span class="k">built on demand. this JSON is not a file anywhere.</span></div>
-      <div class="arrow">↓ <b>67 KB — too big for the chain</b></div>
-      <div class="hop img">the picture <span class="k">· pinned on IPFS</span></div>
+      <div class="hop j">{ "name": <span class="v">"UFSC Builder #7"</span>, "image": <span class="v">"ipfs://bafy…/badge.png"</span> }<br><span class="i18n" lang="en"><span class="k">built on demand. this JSON is not a file anywhere.</span></span><span class="i18n" lang="pt"><span class="k">montado na hora. esse JSON não é arquivo em lugar nenhum.</span></span></div>
+      <div class="arrow">↓ <b><span class="i18n" lang="en">67 KB — too big for the chain</span><span class="i18n" lang="pt">67 KB — grande demais pra chain</span></b></div>
+      <div class="hop img"><span class="i18n" lang="en">the picture <span class="k">· pinned on IPFS</span></span><span class="i18n" lang="pt">a imagem <span class="k">· pinada no IPFS</span></span></div>
     </div>
-    <p class="maps" style="margin-top:clamp(16px,2.2vh,26px)">small and dynamic <b>on-chain</b> · big and static <b>off-chain</b></p>
-    <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://pinata.cloud" target="_blank" rel="noopener"><img class="qr" alt="QR for pinata" data-qr="https://pinata.cloud" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiCAIAAADS3EjhAAAESUlEQVR42u3dQY7bMAxA0abwcoBuev8TdlNg9uoFCk8LhiIpv7efJFbyIQNDyK+11jcg03dLADIDmQEyA5mBzACZgcwAmYHMQGaAzEBmIDNAZiAzQGYgM5AZ8C+uyB9//Ph52HJ8/v6V9Mp5a3X/me/fd+L1Tvxt2M3ATSPIDJAZyAxkBsgMZAbIDDa48l46b8IgIjKdEPnbvFmNifMW5/027GbgphFkBsgMZAYyswQgM5AZIDMod1W9cdXZGHmq5jwif5s31+K3YTcDmYHMAJmBzEBmgMxAZoDMYLPLErxL3ikjzhGxmwEyA5mBzACZgcwAmYHMQGbAl0yB/Ie8aYx7ZkTsZoDMQGYgM0BmIDNAZiAzkBnwpbIpkKpnc1RdUWQa47y1etpvw24GMgOZATIDmYHMAJmBzACZwQaJUyDnnSSRd9pHz/f127CbgcwAmYHMQGaAzEBmIDNAZjBIaArkaWdUnCdvvsRvw24GMgOZATIDmYHMAJmBzACZwWahKZCJZ1RUfeaqk0KqVjJvNfKuN+87spuBm0aQGSAzkBnIDJAZyAyQGWzwWmslvXTVdIJTKN71LZw3uVJ1vXYzcNMIMgNkBjIDmQEyA5kBMoMNEqdA7uVNJ0w8K2LiOve8orzfRmQ17GbgphFkBsgMZAYyA2QGMgNkBhuEpkB6TnJMPMEisho9n66S9x1VrYYpEHDTCDIDZAYyA2QGMgOZATKD5q68lz7vJImqK6qamKk6dWPi78puBjIDmQEyA5mBzCwByAxkBsgMypWdBXKv59kYE0/sqPrMees88X3tZuCmEWQGyAxkBjIDZAYyA2QGGyROgTztKScR511vz5NCqp40ZDcDN40gM0BmIDOQGSAzkBkgM9jg6vmxqv5bn/eper5vz5NCIp+q51Ns7GbgphFkBsgMZAYyA2QGMgNkBhs0nQLJmwOIvG/e305cq7yZiapJDk+EATeNgMxAZiAzQGYgM5AZIDMYLfREmKfpOWFQdb1VZ65MXEm7GcgMZAbIDGQGMgNkBjIDZAYbhM4CqXpCSp77CYPI/EHPJ5WY5Njzme1m4KYRZAbIDGQGMgNkBjIDZAYbJD4RZuJ/+vNeOTLnkTd9MnG+xG4GyAxkBjIDZAYyA5kBMgOZAX91Vb3x0+YPqs5NyTtlpOdJMD0/ld0MZAYyA2QGMgOZATIDmQEygw0uS/AuVU9XiXyq855EU3VFdjNw0wgyA2QGMgOZWQKQGcgMkBmUMwWySeSZL5HJhrz37bmS96pmROxm4KYRZAbIDGQGMgNkBjIDZAYblE2B9JwwiMibIeg593DeOSJ2M3DTCMgMZAYyA2QGMgOZATKD0RKnQKqevlF1RZHphKq1mjjJkfct2M3ATSMgM5AZyAyQGcgMZAbIDEZ7rbWsAtjNQGaAzEBmIDNAZiAzkBkgM5AZIDOQGcgMkBnIDJAZyAxkBsgM6v0B1sZziT12qJAAAAAASUVORK5CYII="></a><a class="qr-cap" href="https://pinata.cloud" target="_blank" rel="noopener">pinata.cloud · free 1 GB</a></div></div>
+    <p class="maps" style="margin-top:clamp(16px,2.2vh,26px)"><span class="i18n" lang="en">small and dynamic <b>on-chain</b> · big and static <b>off-chain</b></span><span class="i18n" lang="pt">pequeno e dinâmico <b>on-chain</b> · grande e estático <b>off-chain</b></span></p>
+    <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://pinata.cloud" target="_blank" rel="noopener"><img class="qr" alt="QR for pinata" data-qr="https://pinata.cloud" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiCAIAAADS3EjhAAAESUlEQVR42u3dQY7bMAxA0abwcoBuev8TdlNg9uoFCk8LhiIpv7efJFbyIQNDyK+11jcg03dLADIDmQEyA5mBzACZgcwAmYHMQGaAzEBmIDNAZiAzQGYgM5AZ8C+uyB9//Ph52HJ8/v6V9Mp5a3X/me/fd+L1Tvxt2M3ATSPIDJAZyAxkBsgMZAbIDDa48l46b8IgIjKdEPnbvFmNifMW5/027GbgphFkBsgMZAYyswQgM5AZIDMod1W9cdXZGHmq5jwif5s31+K3YTcDmYHMAJmBzEBmgMxAZoDMYLPLErxL3ikjzhGxmwEyA5mBzACZgcwAmYHMQGbAl0yB/Ie8aYx7ZkTsZoDMQGYgM0BmIDNAZiAzkBnwpbIpkKpnc1RdUWQa47y1etpvw24GMgOZATIDmYHMAJmBzACZwQaJUyDnnSSRd9pHz/f127CbgcwAmYHMQGaAzEBmIDNAZjBIaArkaWdUnCdvvsRvw24GMgOZATIDmYHMAJmBzACZwWahKZCJZ1RUfeaqk0KqVjJvNfKuN+87spuBm0aQGSAzkBnIDJAZyAyQGWzwWmslvXTVdIJTKN71LZw3uVJ1vXYzcNMIMgNkBjIDmQEyA5kBMoMNEqdA7uVNJ0w8K2LiOve8orzfRmQ17GbgphFkBsgMZAYyA2QGMgNkBhuEpkB6TnJMPMEisho9n66S9x1VrYYpEHDTCDIDZAYyA2QGMgOZATKD5q68lz7vJImqK6qamKk6dWPi78puBjIDmQEyA5mBzCwByAxkBsgMypWdBXKv59kYE0/sqPrMees88X3tZuCmEWQGyAxkBjIDZAYyA2QGGyROgTztKScR511vz5NCqp40ZDcDN40gM0BmIDOQGSAzkBkgM9jg6vmxqv5bn/eper5vz5NCIp+q51Ns7GbgphFkBsgMZAYyA2QGMgNkBhs0nQLJmwOIvG/e305cq7yZiapJDk+EATeNgMxAZiAzQGYgM5AZIDMYLfREmKfpOWFQdb1VZ65MXEm7GcgMZAbIDGQGMgNkBjIDZAYbhM4CqXpCSp77CYPI/EHPJ5WY5Njzme1m4KYRZAbIDGQGMgNkBjIDZAYbJD4RZuJ/+vNeOTLnkTd9MnG+xG4GyAxkBjIDZAYyA5kBMgOZAX91Vb3x0+YPqs5NyTtlpOdJMD0/ld0MZAYyA2QGMgOZATIDmQEygw0uS/AuVU9XiXyq855EU3VFdjNw0wgyA2QGMgOZWQKQGcgMkBmUMwWySeSZL5HJhrz37bmS96pmROxm4KYRZAbIDGQGMgNkBjIDZAYblE2B9JwwiMibIeg593DeOSJ2M3DTCMgMZAYyA2QGMgOZATKD0RKnQKqevlF1RZHphKq1mjjJkfct2M3ATSMgM5AZyAyQGcgMZAbIDEZ7rbWsAtjNQGaAzEBmIDNAZiAzkBkgM5AZIDOQGcgMkBnIDJAZyAxkBsgM6v0B1sZziT12qJAAAAAASUVORK5CYII="></a><a class="qr-cap" href="https://pinata.cloud" target="_blank" rel="noopener"><span class="i18n" lang="en">pinata.cloud · free 1 GB</span><span class="i18n" lang="pt">pinata.cloud · 1 GB grátis</span></a></div></div>
   </div>
   <template class="note">
     <p><strong>Isso é o <span class="mono">{ … }</span> da tabela anterior, aberto</strong> — e é o desenho real do contrato deles.</p>
@@ -586,9 +680,9 @@ body.lean #lean{display:inline}
 
 <section class="slide" data-at="38" data-block="04 OZ" data-title="4 · Por que OpenZeppelin">
   <div class="wrap stack">
-    <h2>Why OpenZeppelin</h2>
+    <h2><span class="i18n" lang="en">Why OpenZeppelin</span><span class="i18n" lang="pt">Por que OpenZeppelin</span></h2>
     <ul class="words-lg">
-      <li>Transfer event</li><li>decimals</li><li>address(0)</li><li>overflow</li><li>allowance</li>
+      <li><span class="i18n" lang="en">Transfer event</span><span class="i18n" lang="pt">evento Transfer</span></li><li>decimals</li><li>address(0)</li><li>overflow</li><li>allowance</li>
     </ul>
   </div>
   <template class="note">
@@ -602,18 +696,18 @@ body.lean #lean{display:inline}
   <div class="wrap">
     <div class="build">
       <div>
-        <h2>Etherscan API key.</h2>
+        <h2><span class="i18n" lang="en">Etherscan API key.</span><span class="i18n" lang="pt">Chave de API do Etherscan.</span></h2>
         <ol class="steps">
           <li><a class="lnk" href="https://etherscan.io/apidashboard" target="_blank" rel="noopener">etherscan.io/apidashboard</a></li>
-          <li>Create a key. <strong>One key, 60+ chains.</strong></li>
-          <li>Paste it into <span class="mono">.env</span></li>
+          <li><span class="i18n" lang="en">Create a key. <strong>One key, 60+ chains.</strong></span><span class="i18n" lang="pt">Cria uma chave. <strong>Uma chave, 60+ chains.</strong></span></li>
+          <li><span class="i18n" lang="en">Paste it into <span class="mono">.env</span></span><span class="i18n" lang="pt">Cola ela no <span class="mono">.env</span></span></li>
         </ol>
-        <p class="done"><b>Done when</b><span class="mono">ETHERSCAN_API_KEY</span> is in your .env</p>
+        <p class="done"><b><span class="i18n" lang="en">Done when</span><span class="i18n" lang="pt">Pronto quando</span></b><span class="i18n" lang="en"><span class="mono">ETHERSCAN_API_KEY</span> is in your .env</span><span class="i18n" lang="pt"><span class="mono">ETHERSCAN_API_KEY</span> está no teu .env</span></p>
         <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://etherscan.io/apidashboard" target="_blank" rel="noopener"><img class="qr" alt="QR for https://etherscan.io/apidashboard" data-qr="https://etherscan.io/apidashboard" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUoAAAFKCAIAAAD0S4FSAAAFXElEQVR42u3dvW7cMBCF0Wyg0kCavP8TpgngnulSCnaY8Z2hzun3T6sPVDEgX2utb8CJvrsEIG9A3oC8AXkD8gbkDfIG5A3IG5A3IG9A3iBvQN6AvAF5A/IG5A1Pdu28+O3Hz8Mux/vvX0VX4/6dd67kzjvv/N66O6fuX3jaPWn1Bg/ngLwBeQPyBuQNyBvkDcgbaOiqe+vURNS9nakmc2lf87l173zePWn1Bg/ngLwBeQPyBuQNyBuQN8gbGOdKfXDdpE7dZFLdXFrq9+7Mh9XN0qWu5MR70uoNHs4BeQPyBuQNyBuQNyBvkDcwzuUSfI3UqZepybOdX9RzRzSrNyBvQN6AvAF5g7wBeQPyBuQN/Bem1j4hdbro03Ymw+oNyBvkDcgbkDcgb0DegLwBecPBYlNrE/fTSk2PTTxtc+dbpXZiO2+PN6s3eDgH5A3IG5A3IG9A3iBvQN5AQ4VTa+ftxTVxeuxe3QmhPa/V0/aHs3qDvAF5A/IG5A3IG5A3yBuQN9DQ1tTaeXtT7fze1A5hqe88cQ7P6g3IG5A3IG9A3oC8Qd6AvAF5A3FbU2s99+JKzZY9baYt9c516v6j1L9v9QYP54C8AXkD8gbkDcgb5A3IG2iocK+1iXNaE03cL63uX9i5GnX3c6oUqzd4OAfkDcgbkDcgb0DeIG9A3kBDhXut1UlNYk3cia3n1Uh52u5xVm/wcA7IG5A3IG9A3oC8Qd6AvIGGXmutf35xaje1utmjOj2nmlInhKauVc9/3wmhgLwBeYO8AXkD8gbkDcgbkDc8SuEJofcmTkRN3OPt/lulZul6zvDtfOe6/8gJoYC8Qd6AvAF5A/IG5A3IG+QNHKbwhNCe52lO3F0stVNX6lrt/N6n7Wln9QYP54C8AXkD8gbkDcgbkDfIGxjnqnvrnVmc1GtT73yvbsZr5/emJgt73rE97xyrN3g4B+QNyBuQNyBvQN4gb0DeQEPXeT+p51mNE39v6rV113niTmxWb0DeIG9A3oC8AXkD8gbkDfIGDvNaa4370hNPkJw4S5c6A/S8fyF18qzVGzycA/IG5A3IG5A3IG+QNyBvoKGmU2t1U0328er/L/T891MzfKbWAHmDvAF5A/IG5A3IG5A3yBs4zNYJoXXTNnXTRRN3zKr7zj3PPN25kj3PLU1NNFq9wcM5IG9A3oC8AXkD8gZ5A/IGGtqaWkvNS6UmsXrOeJ23I1pK6n6uu6+s3uDhHJA3IG9A3oC8AXmDvAF5Aw3F9lpLTZ6dt29Zz9my1I5oda/tOZdm9QYP54C8AXkD8gbkDcgbkDfIGxincK+18167Y+LOZBOn9FL/UWrHO6s3eDgH5A3IG5A3IG9A3oC8Qd7AOIV7rU10PyE08YTQ1IRf6t7oeS5t6mpYvcHDOSBvQN6AvAF5A/IGeQPyBhq66t564oyXq/Hx79xziqvndXZCKCBvQN4gb0DegLwBeQPyBuQN/HWlPnji3NJ5s1Y9Z8vuP/e8ucO6/eGs3uDhHJA3IG9A3oC8AXmDvAF5Aw1dLsHH9Twxs27mqc7O1eg5ldjztFyrN3g4B+QNyBuQNyBvQN4gb0DeQEOm1j6h56xV3TmeqR3RJs6l9ZxotHqDh3NA3oC8AXkD8gbkDfIG5A00FJta67kHWN13rpviSu3iVved6z43ddel9sOzeoOHc0DegLwBeQPyBuQN8gbkDTRUOLXW88zEul+UmohKzYdN/I/qrnPP+8rqDR7OAXkD8gbkDcgbkDfIG5A30NBrreUqgNUbkDcgb0DegLwBeYO8AXkD8gbkDcgbkDfIG5A3IG9A3oC8AXmDvIHT/AGQkjXoHl9Y0QAAAABJRU5ErkJggg=="></a><a class="qr-cap" href="https://etherscan.io/apidashboard" target="_blank" rel="noopener">etherscan.io/apidashboard</a></div></div>
       </div>
       <div>
         <div class="cd" data-cd>05:00</div>
-        <div class="cd-row"><span class="cd-lab">build time</span><button class="cd-reset" data-reset type="button">reset</button></div>
+        <div class="cd-row"><span class="cd-lab">build time</span><button class="cd-reset" data-reset type="button"><span class="i18n" lang="en">reset</span><span class="i18n" lang="pt">zerar</span></button></div>
       </div>
     </div>
   </div>
@@ -628,20 +722,20 @@ body.lean #lean{display:inline}
   <div class="wrap">
     <div class="build">
       <div>
-        <h2>Paste your address.</h2>
+        <h2><span class="i18n" lang="en">Paste your address.</span><span class="i18n" lang="pt">Cola teu endereço.</span></h2>
         <ol class="steps">
-          <li>Scan the QR → write your name and address in the first empty row</li>
-          <li>Wait ~30 seconds, then check Rabby. You have Sepolia ETH.</li>
-          <li>Remix → <span class="mono">Deploy &amp; Run</span> → environment <span class="mono">Injected Provider – Rabby</span></li>
-          <li>Pick <span class="mono">Token.sol</span>, fill the constructor, <span class="mono">Deploy</span>, confirm in Rabby</li>
-          <li><b>Copy your token's address</b> — Remix shows it under <span class="mono">Deployed Contracts</span>, with a copy button</li>
+          <li><span class="i18n" lang="en">Scan the QR → write your name and address in the first empty row</span><span class="i18n" lang="pt">Escaneia o QR → escreve teu nome e teu endereço na primeira linha vazia</span></li>
+          <li><span class="i18n" lang="en">Wait ~30 seconds, then check Rabby. You have Sepolia ETH.</span><span class="i18n" lang="pt">Espera uns 30 segundos e olha o Rabby. Tu tem ETH de Sepolia.</span></li>
+          <li><span class="i18n" lang="en">Remix → <span class="mono">Deploy &amp; Run</span> → environment <span class="mono">Injected Provider – Rabby</span></span><span class="i18n" lang="pt">Remix → <span class="mono">Deploy &amp; Run</span> → em environment, escolhe <span class="mono">Injected Provider – Rabby</span></span></li>
+          <li><span class="i18n" lang="en">Pick <span class="mono">Token.sol</span>, fill the constructor, <span class="mono">Deploy</span>, confirm in Rabby</span><span class="i18n" lang="pt">Escolhe <span class="mono">Token.sol</span>, preenche o constructor, <span class="mono">Deploy</span>, confirma no Rabby</span></li>
+          <li><span class="i18n" lang="en"><b>Copy your token's address</b> — Remix shows it under <span class="mono">Deployed Contracts</span>, with a copy button</span><span class="i18n" lang="pt"><b>Copia o endereço do teu token</b> — o Remix mostra ele em <span class="mono">Deployed Contracts</span>, com botão de copiar</span></li>
         </ol>
-        <p class="done"><b>Done when</b>Your token exists on a live chain.</p>
-        <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://docs.google.com/spreadsheets/d/1CCwQd4xYxQ8DUgzMtBVs0A-V-z8dFJgO6UoBgbki3E0/edit" target="_blank" rel="noopener"><img class="qr" alt="QR for https://docs.google.com/spreadsheets/d/1CCwQd4xYxQ8DUgzMtBVs0A-V-z8dFJgO6UoBgbki3E0/edit" data-qr="https://docs.google.com/spreadsheets/d/1CCwQd4xYxQ8DUgzMtBVs0A-V-z8dFJgO6UoBgbki3E0/edit" src="data:image/png;base64,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"></a><a class="qr-cap" href="https://docs.google.com/spreadsheets/d/1CCwQd4xYxQ8DUgzMtBVs0A-V-z8dFJgO6UoBgbki3E0/edit" target="_blank" rel="noopener">planilha da turma — cole seu endereco</a></div></div>
+        <p class="done"><b><span class="i18n" lang="en">Done when</span><span class="i18n" lang="pt">Pronto quando</span></b><span class="i18n" lang="en">Your token exists on a live chain.</span><span class="i18n" lang="pt">teu token existe numa chain de verdade.</span></p>
+        <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://docs.google.com/spreadsheets/d/1CCwQd4xYxQ8DUgzMtBVs0A-V-z8dFJgO6UoBgbki3E0/edit" target="_blank" rel="noopener"><img class="qr" alt="QR for https://docs.google.com/spreadsheets/d/1CCwQd4xYxQ8DUgzMtBVs0A-V-z8dFJgO6UoBgbki3E0/edit" data-qr="https://docs.google.com/spreadsheets/d/1CCwQd4xYxQ8DUgzMtBVs0A-V-z8dFJgO6UoBgbki3E0/edit" src="data:image/png;base64,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"></a><a class="qr-cap" href="https://docs.google.com/spreadsheets/d/1CCwQd4xYxQ8DUgzMtBVs0A-V-z8dFJgO6UoBgbki3E0/edit" target="_blank" rel="noopener"><span class="i18n" lang="en">class spreadsheet — paste your address</span><span class="i18n" lang="pt">planilha da turma — cola teu endereço</span></a></div></div>
       </div>
       <div>
         <div class="cd" data-cd>08:00</div>
-        <div class="cd-row"><span class="cd-lab">build time</span><button class="cd-reset" data-reset type="button">reset</button></div>
+        <div class="cd-row"><span class="cd-lab">build time</span><button class="cd-reset" data-reset type="button"><span class="i18n" lang="en">reset</span><span class="i18n" lang="pt">zerar</span></button></div>
       </div>
     </div>
   </div>
@@ -660,21 +754,21 @@ body.lean #lean{display:inline}
   <div class="wrap">
     <div class="build">
       <div>
-        <h2>Put your name on the board.</h2>
+        <h2><span class="i18n" lang="en">Put your name on the board.</span><span class="i18n" lang="pt">Põe teu nome no telão.</span></h2>
         <ol class="steps">
-          <li>Remix → <span class="mono">At Address</span> → paste the registry (below)</li>
-          <li>Call <span class="mono">register("your team", &lt;your token address&gt;)</span> <span class="dim">— the one you just copied</span></li>
-          <li>Confirm in Rabby. One transaction.</li>
-          <li>Watch the board at the front. Then open Rabby → <span class="mono">NFTs</span>.</li>
+          <li><span class="i18n" lang="en">Remix → <span class="mono">At Address</span> → paste the registry (below)</span><span class="i18n" lang="pt">Remix → <span class="mono">At Address</span> → cola o registry (abaixo)</span></li>
+          <li><span class="i18n" lang="en">Call <span class="mono">register("your team", &lt;your token address&gt;)</span> <span class="dim">— the one you just copied</span></span><span class="i18n" lang="pt">Chama <span class="mono">register("your team", &lt;your token address&gt;)</span> <span class="dim">— o que tu acabou de copiar</span></span></li>
+          <li><span class="i18n" lang="en">Confirm in Rabby. One transaction.</span><span class="i18n" lang="pt">Confirma no Rabby. Uma transação só.</span></li>
+          <li><span class="i18n" lang="en">Watch the board at the front. Then open Rabby → <span class="mono">NFTs</span>.</span><span class="i18n" lang="pt">Olha o telão lá na frente. Depois abre o Rabby → <span class="mono">NFTs</span>.</span></li>
         </ol>
                 <p class="maps" style="margin-top:clamp(10px,1.6vh,18px)"><span class="dim">registry ·</span> <a href="https://sepolia.etherscan.io/address/0xaD08C29Aa13a01Ef33533398cf8bAA9eFEeAc360#writeContract" target="_blank" rel="noopener"><b>0xaD08C29Aa13a01Ef33533398cf8bAA9eFEeAc360</b></a></p>
-        <p class="fns"><a href="board.html" target="_blank" rel="noopener">abrir o telão</a> <span class="dim">·</span> <a href="https://sepolia.etherscan.io/address/0xaD08C29Aa13a01Ef33533398cf8bAA9eFEeAc360#readContract" target="_blank" rel="noopener">read contract</a> <span class="dim">·</span> <a href="https://remix.ethereum.org" target="_blank" rel="noopener">remix</a></p>
-        <p class="done"><b>Done when</b>Your row is on the screen and the badge is in your wallet.</p>
-        <p class="fns" style="margin-top:clamp(10px,1.6vh,18px)"><span class="dim">terminal, if you prefer:</span> <span class="mono">cast send $UFSC_BUILDERS "register(string,address)" "your team" 0xYourToken</span></p>
+        <p class="fns"><a href="board.html" target="_blank" rel="noopener"><span class="i18n" lang="en">open the board</span><span class="i18n" lang="pt">abrir o telão</span></a> <span class="dim">·</span> <a href="https://sepolia.etherscan.io/address/0xaD08C29Aa13a01Ef33533398cf8bAA9eFEeAc360#readContract" target="_blank" rel="noopener">read contract</a> <span class="dim">·</span> <a href="https://remix.ethereum.org" target="_blank" rel="noopener">remix</a></p>
+        <p class="done"><b><span class="i18n" lang="en">Done when</span><span class="i18n" lang="pt">Pronto quando</span></b><span class="i18n" lang="en">Your row is on the screen and the badge is in your wallet.</span><span class="i18n" lang="pt">tua linha está no telão e o badge está na tua carteira.</span></p>
+        <p class="fns" style="margin-top:clamp(10px,1.6vh,18px)"><span class="i18n" lang="en"><span class="dim">terminal, if you prefer:</span></span><span class="i18n" lang="pt"><span class="dim">no terminal, se preferir:</span></span> <span class="mono">cast send $UFSC_BUILDERS "register(string,address)" "your team" 0xYourToken</span></p>
       </div>
       <div>
         <div class="cd" data-cd>05:00</div>
-        <div class="cd-row"><span class="cd-lab">build time</span><button class="cd-reset" data-reset type="button">reset</button></div>
+        <div class="cd-row"><span class="cd-lab">build time</span><button class="cd-reset" data-reset type="button"><span class="i18n" lang="en">reset</span><span class="i18n" lang="pt">zerar</span></button></div>
       </div>
     </div>
   </div>
@@ -693,19 +787,19 @@ body.lean #lean{display:inline}
   <div class="wrap">
     <div class="build">
       <div>
-        <h2>Ask it questions.</h2>
+        <h2><span class="i18n" lang="en">Ask it questions.</span><span class="i18n" lang="pt">Faz perguntas pra ele.</span></h2>
         <ol class="steps">
-          <li>Open the playground <span class="dim">· nothing to install</span></li>
-          <li>Type a query. The schema autocompletes.</li>
-          <li>Find <strong>your own name</strong> in the result</li>
-          <li>Now change it: order by <span class="mono">updatedAt</span>, ask for <span class="mono">badgeId</span></li>
+          <li><span class="i18n" lang="en">Open the playground <span class="dim">· nothing to install</span></span><span class="i18n" lang="pt">Abre o playground <span class="dim">· nada pra instalar</span></span></li>
+          <li><span class="i18n" lang="en">Type a query. The schema autocompletes.</span><span class="i18n" lang="pt">Escreve uma query. O schema autocompleta.</span></li>
+          <li><span class="i18n" lang="en">Find <strong>your own name</strong> in the result</span><span class="i18n" lang="pt">Acha <strong>o teu próprio nome</strong> no resultado</span></li>
+          <li><span class="i18n" lang="en">Now change it: order by <span class="mono">updatedAt</span>, ask for <span class="mono">badgeId</span></span><span class="i18n" lang="pt">Agora muda: ordena por <span class="mono">updatedAt</span>, pede <span class="mono">badgeId</span></span></li>
         </ol>
-        <p class="done"><b>Done when</b>The playground returns you.</p>
-        <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://api.studio.thegraph.com/query/1758157/ufscbuilder/v0.0.1/graphql?query=%7B%0A%20%20builders%28orderBy%3A%20updatedAt%2C%20orderDirection%3A%20desc%29%20%7B%0A%20%20%20%20name%0A%20%20%20%20token%0A%20%20%20%20badgeId%0A%20%20%20%20writes%0A%20%20%7D%0A%7D" target="_blank" rel="noopener"><img class="qr" alt="QR for the subgraph" data-qr="https://api.studio.thegraph.com/query/1758157/ufscbuilder/v0.0.1/graphql?query=%7B%0A%20%20builders%28orderBy%3A%20updatedAt%2C%20orderDirection%3A%20desc%29%20%7B%0A%20%20%20%20name%0A%20%20%20%20token%0A%20%20%20%20badgeId%0A%20%20%20%20writes%0A%20%20%7D%0A%7D" src="data:image/png;base64,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"></a><a class="qr-cap" href="https://api.studio.thegraph.com/query/1758157/ufscbuilder/v0.0.1/graphql?query=%7B%0A%20%20builders%28orderBy%3A%20updatedAt%2C%20orderDirection%3A%20desc%29%20%7B%0A%20%20%20%20name%0A%20%20%20%20token%0A%20%20%20%20badgeId%0A%20%20%20%20writes%0A%20%20%7D%0A%7D" target="_blank" rel="noopener">playground · query já escrita</a></div></div>
+        <p class="done"><b><span class="i18n" lang="en">Done when</span><span class="i18n" lang="pt">Pronto quando</span></b><span class="i18n" lang="en">The playground returns you.</span><span class="i18n" lang="pt">o playground devolve tu no resultado.</span></p>
+        <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://api.studio.thegraph.com/query/1758157/ufscbuilder/v0.0.1/graphql?query=%7B%0A%20%20builders%28orderBy%3A%20updatedAt%2C%20orderDirection%3A%20desc%29%20%7B%0A%20%20%20%20name%0A%20%20%20%20token%0A%20%20%20%20badgeId%0A%20%20%20%20writes%0A%20%20%7D%0A%7D" target="_blank" rel="noopener"><img class="qr" alt="QR for the subgraph" data-qr="https://api.studio.thegraph.com/query/1758157/ufscbuilder/v0.0.1/graphql?query=%7B%0A%20%20builders%28orderBy%3A%20updatedAt%2C%20orderDirection%3A%20desc%29%20%7B%0A%20%20%20%20name%0A%20%20%20%20token%0A%20%20%20%20badgeId%0A%20%20%20%20writes%0A%20%20%7D%0A%7D" src="data:image/png;base64,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"></a><a class="qr-cap" href="https://api.studio.thegraph.com/query/1758157/ufscbuilder/v0.0.1/graphql?query=%7B%0A%20%20builders%28orderBy%3A%20updatedAt%2C%20orderDirection%3A%20desc%29%20%7B%0A%20%20%20%20name%0A%20%20%20%20token%0A%20%20%20%20badgeId%0A%20%20%20%20writes%0A%20%20%7D%0A%7D" target="_blank" rel="noopener"><span class="i18n" lang="en">playground · query already written</span><span class="i18n" lang="pt">playground · query já escrita</span></a></div></div>
       </div>
       <div>
         <div class="cd" data-cd>10:00</div>
-        <div class="cd-row"><span class="cd-lab">build time</span><button class="cd-reset" data-reset type="button">reset</button></div>
+        <div class="cd-row"><span class="cd-lab">build time</span><button class="cd-reset" data-reset type="button"><span class="i18n" lang="en">reset</span><span class="i18n" lang="pt">zerar</span></button></div>
         <div class="hop j" style="margin-top:22px">{ builders(orderBy: updatedAt) { name token badgeId } }</div>
       </div>
     </div>
@@ -721,17 +815,17 @@ body.lean #lean{display:inline}
 
 <section class="slide" data-at="71" data-block="09 Scripts" data-title="9 · Ordem dos comandos">
   <div class="wrap">
-    <h2>In this order.</h2>
+    <h2><span class="i18n" lang="en">In this order.</span><span class="i18n" lang="pt">Nesta ordem.</span></h2>
     <ol class="steps cmd">
-      <li><span class="mono">git clone …</span> <span class="dim">· then cd into it</span></li>
-      <li><span class="mono">make install</span> <span class="dim">· forge-std + OpenZeppelin. once.</span></li>
+      <li><span class="mono">git clone …</span> <span class="i18n" lang="en"><span class="dim">· then cd into it</span></span><span class="i18n" lang="pt"><span class="dim">· depois entra na pasta</span></span></li>
+      <li><span class="mono">make install</span> <span class="i18n" lang="en"><span class="dim">· forge-std + OpenZeppelin. once.</span></span><span class="i18n" lang="pt"><span class="dim">· forge-std + OpenZeppelin. uma vez só.</span></span></li>
       <li><span class="mono">make build</span></li>
-      <li><span class="mono">make test</span> <span class="dim">· 12 tests, 2 of them fuzzed</span></li>
+      <li><span class="mono">make test</span> <span class="i18n" lang="en"><span class="dim">· 12 tests, 2 of them fuzzed</span></span><span class="i18n" lang="pt"><span class="dim">· 12 testes, 2 deles com fuzz</span></span></li>
       <li><span class="mono">make deploy</span> <span class="dim">· NETWORK=sepolia</span></li>
-      <li><span class="mono">make abi</span> <span class="dim">· regenerate the subgraph ABI from the build</span></li>
+      <li><span class="mono">make abi</span> <span class="i18n" lang="en"><span class="dim">· regenerate the subgraph ABI from the build</span></span><span class="i18n" lang="pt"><span class="dim">· regenera a ABI do subgraph a partir do build</span></span></li>
       <li><span class="mono">make subgraph</span> <span class="dim">· codegen + build</span></li>
     </ol>
-    <p class="fns" style="margin-top:clamp(16px,2.4vh,28px)"><span class="dim">anytime:</span> make fmt · make cov · make chisel · make slither</p>
+    <p class="fns" style="margin-top:clamp(16px,2.4vh,28px)"><span class="i18n" lang="en"><span class="dim">anytime:</span></span><span class="i18n" lang="pt"><span class="dim">a qualquer hora:</span></span> make fmt · make cov · make chisel · make slither</p>
     <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://github.com/kamikazebr/ufsc-builders" target="_blank" rel="noopener"><img class="qr" alt="QR for https://github.com/kamikazebr/ufsc-builders" data-qr="https://github.com/kamikazebr/ufsc-builders" src="data:image/png;base64,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"></a><a class="qr-cap" href="https://github.com/kamikazebr/ufsc-builders" target="_blank" rel="noopener">github.com/kamikazebr/ufsc-builders</a></div></div>
   </div>
   <template class="note">
@@ -746,16 +840,16 @@ body.lean #lean{display:inline}
 
 <section class="slide" data-at="75" data-block="10 Agente" data-title="10 · O agente vai junto">
   <div class="wrap">
-    <h2>You are bringing an agent. Teach it the repo.</h2>
-    <p class="fns" style="margin-bottom:clamp(12px,1.8vh,20px)"><span class="dim">without this it suggests <span class="mono">npm install @openzeppelin/contracts</span> in a submodule repo, writes Hardhat tests, and commits your <span class="mono">.env</span></span></p>
+    <h2><span class="i18n" lang="en">You are bringing an agent. Teach it the repo.</span><span class="i18n" lang="pt">Tu vai levar um agente. Ensina o repo pra ele.</span></h2>
+    <p class="fns" style="margin-bottom:clamp(12px,1.8vh,20px)"><span class="i18n" lang="en"><span class="dim">without this it suggests <span class="mono">npm install @openzeppelin/contracts</span> in a submodule repo, writes Hardhat tests, and commits your <span class="mono">.env</span></span></span><span class="i18n" lang="pt"><span class="dim">sem isso ele sugere <span class="mono">npm install @openzeppelin/contracts</span> num repo de submódulo, escreve teste em Hardhat e commita o teu <span class="mono">.env</span></span></span></p>
     <ol class="steps">
-      <li><span class="mono">CLAUDE.md</span> <span class="dim">— read automatically. Foundry not Hardhat, submodules not npm, <span class="mono">.env</span> never committed.</span></li>
-      <li><span class="mono">/hackathon-scope</span> <span class="dim">— no idea yet, or an idea far too big for 48 h</span></li>
-      <li><span class="mono">/solidity-review</span> <span class="dim">— build, test, slither, then the checklist, then a test that proves the bug</span></li>
-      <li><span class="mono">/ship-to-testnet</span> <span class="dim">— deploy, verify, and a link you can demo</span></li>
+      <li><span class="mono">CLAUDE.md</span> <span class="i18n" lang="en"><span class="dim">— read automatically. Foundry not Hardhat, submodules not npm, <span class="mono">.env</span> never committed.</span></span><span class="i18n" lang="pt"><span class="dim">— lido sozinho. Foundry e não Hardhat, submódulo e não npm, <span class="mono">.env</span> nunca commitado.</span></span></li>
+      <li><span class="mono">/hackathon-scope</span> <span class="i18n" lang="en"><span class="dim">— no idea yet, or an idea far too big for 48 h</span></span><span class="i18n" lang="pt"><span class="dim">— sem ideia ainda, ou uma ideia grande demais pra 48 h</span></span></li>
+      <li><span class="mono">/solidity-review</span> <span class="i18n" lang="en"><span class="dim">— build, test, slither, then the checklist, then a test that proves the bug</span></span><span class="i18n" lang="pt"><span class="dim">— build, test, slither, depois o checklist, depois um teste que prova o bug</span></span></li>
+      <li><span class="mono">/ship-to-testnet</span> <span class="i18n" lang="en"><span class="dim">— deploy, verify, and a link you can demo</span></span><span class="i18n" lang="pt"><span class="dim">— deploy, verify e um link pra demonstrar</span></span></li>
     </ol>
-    <p class="done"><b>The point</b>A green Slither run is not a reviewed contract. This repo shipped a bug Slither never saw.</p>
-    <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://github.com/kamikazebr/ufsc-builders/blob/main/SLITHER.md" target="_blank" rel="noopener"><img class="qr" alt="QR" data-qr="https://github.com/kamikazebr/ufsc-builders/blob/main/SLITHER.md" src="data:image/png;base64,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"></a><a class="qr-cap" href="https://github.com/kamikazebr/ufsc-builders/blob/main/SLITHER.md" target="_blank" rel="noopener">SLITHER.md — o bug que a ferramenta não viu</a></div></div>
+    <p class="done"><b><span class="i18n" lang="en">The point</span><span class="i18n" lang="pt">O ponto</span></b><span class="i18n" lang="en">A green Slither run is not a reviewed contract. This repo shipped a bug Slither never saw.</span><span class="i18n" lang="pt">Slither verde não é contrato revisado. Este repo já subiu com um bug que o Slither nunca viu.</span></p>
+    <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://github.com/kamikazebr/ufsc-builders/blob/main/SLITHER.md" target="_blank" rel="noopener"><img class="qr" alt="QR" data-qr="https://github.com/kamikazebr/ufsc-builders/blob/main/SLITHER.md" src="data:image/png;base64,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"></a><a class="qr-cap" href="https://github.com/kamikazebr/ufsc-builders/blob/main/SLITHER.md" target="_blank" rel="noopener"><span class="i18n" lang="en">SLITHER.md — the bug the tool never saw</span><span class="i18n" lang="pt">SLITHER.md — o bug que a ferramenta não viu</span></a></div></div>
   </div>
   <template class="note">
     <p><strong>Por que isso vale um slide:</strong> todos eles vão codar com agente sábado. Sem o <span class="mono">CLAUDE.md</span> o agente chuta as convenções erradas e eles perdem uma hora achando que é bug do Foundry.</p>
@@ -768,17 +862,17 @@ body.lean #lean{display:inline}
 
 <section class="slide" data-at="78" data-block="11 Depois" data-title="11 · Depois da aula">
   <div class="wrap">
-    <h2>Se quiser ver de novo.</h2>
-    <p class="fns" style="margin-bottom:clamp(12px,1.8vh,20px)"><span class="dim">tudo em português, tudo meu:</span></p>
+    <h2><span class="i18n" lang="en">If you want to go over it again.</span><span class="i18n" lang="pt">Se quiser ver de novo.</span></h2>
+    <p class="fns" style="margin-bottom:clamp(12px,1.8vh,20px)"><span class="i18n" lang="en"><span class="dim">all in Portuguese, all mine:</span></span><span class="i18n" lang="pt"><span class="dim">tudo em português, tudo meu:</span></span></p>
     <ol class="steps">
-      <li><a href="https://youtu.be/GnhLM8mHq8E" target="_blank" rel="noopener">Overflow e underflow</a> <span class="dim">· 16 min · bits, bytes, o que <span class="mono">uint256</span> é de verdade</span></li>
-      <li><a href="https://www.youtube.com/watch?v=_sPuy0pGUmA" target="_blank" rel="noopener">chisel, na prática</a> <span class="dim">· 20 min · aritmética literal, onde o valor errado passa quieto</span></li>
-      <li><a href="https://youtu.be/B0V3zoK9sxo" target="_blank" rel="noopener">Três linhas que clonam um contrato</a> <span class="dim">· 9 min · EIP-1167 e Yul</span></li>
-      <li><a href="https://www.youtube.com/watch?v=YYe5gYzmXU4" target="_blank" rel="noopener">Subgraph, do começo ao fim</a> <span class="dim">· 1h04 · schema até o deploy</span></li>
+      <li><a href="https://youtu.be/GnhLM8mHq8E" target="_blank" rel="noopener">Overflow e underflow</a> <span class="i18n" lang="en"><span class="dim">· 16 min · bits, bytes, what <span class="mono">uint256</span> really is</span></span><span class="i18n" lang="pt"><span class="dim">· 16 min · bits, bytes, o que <span class="mono">uint256</span> é de verdade</span></span></li>
+      <li><a href="https://www.youtube.com/watch?v=_sPuy0pGUmA" target="_blank" rel="noopener">chisel, na prática</a> <span class="i18n" lang="en"><span class="dim">· 20 min · literal arithmetic, where the wrong value slips through unnoticed</span></span><span class="i18n" lang="pt"><span class="dim">· 20 min · aritmética literal, onde o valor errado passa quieto</span></span></li>
+      <li><a href="https://youtu.be/B0V3zoK9sxo" target="_blank" rel="noopener">Três linhas que clonam um contrato</a> <span class="i18n" lang="en"><span class="dim">· 9 min · EIP-1167 and Yul</span></span><span class="i18n" lang="pt"><span class="dim">· 9 min · EIP-1167 e Yul</span></span></li>
+      <li><a href="https://www.youtube.com/watch?v=YYe5gYzmXU4" target="_blank" rel="noopener">Subgraph, do começo ao fim</a> <span class="i18n" lang="en"><span class="dim">· 1h04 · schema through to the deploy</span></span><span class="i18n" lang="pt"><span class="dim">· 1h04 · schema até o deploy</span></span></li>
     </ol>
-    <p class="fns" style="margin-top:clamp(14px,2vh,22px)"><span class="dim">e uma ferramenta pra entender chave:</span> <a href="https://iancoleman.io/bip39/" target="_blank" rel="noopener">iancoleman.io/bip39</a> <span class="dim">· seed → chave privada → endereço, passo a passo. Use offline, com seed inventada — nunca com a tua.</span></p>
-    <p class="done"><b>No repo</b>LINKS.md tem todos, e mais os do hackathon.</p>
-    <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://github.com/kamikazebr/ufsc-builders/blob/main/LINKS.md" target="_blank" rel="noopener"><img class="qr" alt="QR" data-qr="https://github.com/kamikazebr/ufsc-builders/blob/main/LINKS.md" src="data:image/png;base64,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"></a><a class="qr-cap" href="https://github.com/kamikazebr/ufsc-builders/blob/main/LINKS.md" target="_blank" rel="noopener">LINKS.md — tudo num lugar</a></div></div>
+    <p class="fns" style="margin-top:clamp(14px,2vh,22px)"><span class="i18n" lang="en"><span class="dim">and a tool for understanding keys:</span></span><span class="i18n" lang="pt"><span class="dim">e uma ferramenta pra entender chave:</span></span> <a href="https://iancoleman.io/bip39/" target="_blank" rel="noopener">iancoleman.io/bip39</a> <span class="i18n" lang="en"><span class="dim">· seed → private key → address, step by step. Use it offline, with a made-up seed — never your own.</span></span><span class="i18n" lang="pt"><span class="dim">· seed → chave privada → endereço, passo a passo. Use offline, com seed inventada — nunca com a tua.</span></span></p>
+    <p class="done"><b><span class="i18n" lang="en">In the repo</span><span class="i18n" lang="pt">No repo</span></b><span class="i18n" lang="en">LINKS.md has every one of them, plus the hackathon links.</span><span class="i18n" lang="pt">LINKS.md tem todos, e mais os do hackathon.</span></p>
+    <div class="qrs"><div class="qr-item"><a class="qr-img" href="https://github.com/kamikazebr/ufsc-builders/blob/main/LINKS.md" target="_blank" rel="noopener"><img class="qr" alt="QR" data-qr="https://github.com/kamikazebr/ufsc-builders/blob/main/LINKS.md" src="data:image/png;base64,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"></a><a class="qr-cap" href="https://github.com/kamikazebr/ufsc-builders/blob/main/LINKS.md" target="_blank" rel="noopener"><span class="i18n" lang="en">LINKS.md — everything in one place</span><span class="i18n" lang="pt">LINKS.md — tudo num lugar</span></a></div></div>
   </div>
   <template class="note">
     <p><strong>iancoleman.io/bip39:</strong> abre e gera uma seed nova na frente deles. Dá pra ver a mesma seed virando endereço do Ethereum, do Bitcoin, e a derivação <span class="mono">m/44'/60'/0'/0/0</span> — o "account 1, account 2" do Rabby deixa de ser mágica.</p>
@@ -797,6 +891,8 @@ body.lean #lean{display:inline}
 <div class="hud">
   <span id="blk"></span>
   <span id="lean">LEAN</span>
+  <span id="langtog" title="language · P">EN</span>
+  <span id="themetog" title="theme · D">DARK</span>
   <span id="clock" class="off">--:--</span>
   <span id="clockreset" title="reset the class clock">⟲</span>
   <span><span class="cur" id="cur">1</span> / <span id="tot">0</span></span>
@@ -806,29 +902,30 @@ body.lean #lean{display:inline}
 
 <div class="overlay" id="help">
   <div style="max-width:900px;margin:0 auto">
-    <h2>Keyboard</h2>
+    <h2><span class="i18n" lang="en">Keyboard</span><span class="i18n" lang="pt">Teclado</span></h2>
     <div class="keys">
-      <div><kbd>→</kbd> <kbd>Space</kbd> next slide</div>
-      <div><kbd>←</kbd> previous slide</div>
-      <div><kbd>Home</kbd> <kbd>End</kbd> first / last</div>
-      <div><kbd>O</kbd> overview grid</div>
-      <div><kbd>N</kbd> or <b>tap “notes”</b> — presenter notes</div>
-      <div><kbd>S</kbd> or <b>tap the countdown</b> — start / pause the round</div>
-      <div><kbd>T</kbd> or <b>tap the clock</b> — start / pause the class clock</div>
-      <div><kbd>L</kbd> lean mode — skip the Remix duplicates</div>
-      <div><kbd>T</kbd> start / pause the 60-min clock</div>
-      <div><kbd>R</kbd> or <b>tap ⟲</b> — reset the class clock</div>
-      <div><kbd>F</kbd> fullscreen</div>
-      <div><kbd>?</kbd> this panel</div>
-      <div><kbd>Esc</kbd> close any panel</div>
+      <div><span class="i18n" lang="en"><kbd>→</kbd> <kbd>Space</kbd> next slide</span><span class="i18n" lang="pt"><kbd>→</kbd> <kbd>Espaço</kbd> próximo slide</span></div>
+      <div><span class="i18n" lang="en"><kbd>←</kbd> previous slide</span><span class="i18n" lang="pt"><kbd>←</kbd> slide anterior</span></div>
+      <div><span class="i18n" lang="en"><kbd>Home</kbd> <kbd>End</kbd> first / last</span><span class="i18n" lang="pt"><kbd>Home</kbd> <kbd>End</kbd> primeiro / último</span></div>
+      <div><span class="i18n" lang="en"><kbd>O</kbd> overview grid</span><span class="i18n" lang="pt"><kbd>O</kbd> grade de slides</span></div>
+      <div><span class="i18n" lang="en"><kbd>N</kbd> or <b>tap “notes”</b> — presenter notes</span><span class="i18n" lang="pt"><kbd>N</kbd> ou <b>toca em “notas”</b> — notas do apresentador</span></div>
+      <div><span class="i18n" lang="en"><kbd>S</kbd> or <b>tap the countdown</b> — start / pause the round</span><span class="i18n" lang="pt"><kbd>S</kbd> ou <b>toca no contador</b> — começa / pausa a rodada</span></div>
+      <div><span class="i18n" lang="en"><kbd>T</kbd> or <b>tap the clock</b> — start / pause the class clock</span><span class="i18n" lang="pt"><kbd>T</kbd> ou <b>toca no relógio</b> — começa / pausa o relógio da aula</span></div>
+      <div><span class="i18n" lang="en"><kbd>L</kbd> lean mode — skip the Remix duplicates</span><span class="i18n" lang="pt"><kbd>L</kbd> modo enxuto — pula os slides repetidos do Remix</span></div>
+      <div><span class="i18n" lang="en"><kbd>D</kbd> or <b>tap DARK</b> — dark / light theme</span><span class="i18n" lang="pt"><kbd>D</kbd> ou <b>toca em DARK</b> — tema escuro / claro</span></div>
+      <div><span class="i18n" lang="en"><kbd>P</kbd> or <b>tap EN</b> — English / Portuguese</span><span class="i18n" lang="pt"><kbd>P</kbd> ou <b>toca em EN</b> — inglês / português</span></div>
+      <div><span class="i18n" lang="en"><kbd>R</kbd> or <b>tap ⟲</b> — reset the class clock</span><span class="i18n" lang="pt"><kbd>R</kbd> ou <b>toca em ⟲</b> — zera o relógio da aula</span></div>
+      <div><span class="i18n" lang="en"><kbd>F</kbd> fullscreen</span><span class="i18n" lang="pt"><kbd>F</kbd> tela cheia</span></div>
+      <div><span class="i18n" lang="en"><kbd>?</kbd> this panel</span><span class="i18n" lang="pt"><kbd>?</kbd> este painel</span></div>
+      <div><span class="i18n" lang="en"><kbd>Esc</kbd> close any panel</span><span class="i18n" lang="pt"><kbd>Esc</kbd> fecha qualquer painel</span></div>
     </div>
-    <p class="sub">The clock turns <span style="color:var(--warn)">amber</span> when you are behind the pace this deck is timed to. Each slide carries its own target minute. Slides marked <span style="color:var(--warn)">OPTIONAL</span> in the overview are the ones to cut first.</p>
-    <p class="sub"><strong>Lean mode</strong> (<kbd>L</kbd>) skips the eleven slides whose code will already be open in Remix — 40 slides becomes 29. They stay reachable from the overview, so they double as your offline fallback if the projector or the wifi dies.</p>
+    <p class="sub"><span class="i18n" lang="en">The clock turns <span style="color:var(--warn)">amber</span> when you are behind the pace this deck is timed to. Each slide carries its own target minute. Slides marked <span style="color:var(--warn)">OPTIONAL</span> in the overview are the ones to cut first.</span><span class="i18n" lang="pt">O relógio fica <span style="color:var(--warn)">âmbar</span> quando tu está atrasado em relação ao ritmo pra que este deck foi cronometrado. Cada slide carrega o próprio minuto-alvo. Os slides marcados <span style="color:var(--warn)">OPTIONAL</span> na grade são os primeiros a cortar.</span></p>
+    <p class="sub"><span class="i18n" lang="en"><strong>Lean mode</strong> (<kbd>L</kbd>) skips the eleven slides whose code will already be open in Remix — 40 slides becomes 29. They stay reachable from the overview, so they double as your offline fallback if the projector or the wifi dies.</span><span class="i18n" lang="pt"><strong>O modo enxuto</strong> (<kbd>L</kbd>) pula os onze slides cujo código já vai estar aberto no Remix — 40 slides viram 29. Eles continuam acessíveis pela grade, então servem de plano B offline se o projetor ou o wifi morrer.</span></p>
   </div>
 </div>
 
-<button id="notesbtn" type="button" title="presenter notes">notes</button>
-<div class="notes" id="notes"><h4>Presenter notes</h4><div id="notesBody"></div></div>
+<button id="notesbtn" type="button" title="presenter notes"><span class="i18n" lang="en">notes</span><span class="i18n" lang="pt">notas</span></button>
+<div class="notes" id="notes"><h4><span class="i18n" lang="en">Presenter notes</span><span class="i18n" lang="pt">Notas do apresentador</span></h4><div id="notesBody"></div></div>
 
 <script>
 (function () {
@@ -836,6 +933,57 @@ body.lean #lean{display:inline}
 
   var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
   var i = 0;
+
+  /* ---------- theme + language ----------
+     The <html> attributes were already painted by the bootstrap script at
+     the top of the file, so this only has to read them back and keep them
+     in sync. localStorage is wrapped: a file:// deck in a locked-down
+     browser must degrade to the defaults, not throw and kill the deck. */
+  var root = document.documentElement;
+
+  function readAttr(name, allowed, dflt) {
+    var v = root.getAttribute(name);
+    return allowed.indexOf(v) >= 0 ? v : dflt;
+  }
+  function save(key, v) { try { localStorage.setItem(key, v); } catch (e) {} }
+
+  var theme = readAttr('data-theme', ['dark', 'light'], 'dark');
+  var lang  = readAttr('data-lang',  ['en', 'pt'],      'en');
+
+  // The label the countdown writes is the one string the deck builds in JS
+  // rather than in markup, so it needs its own pair.
+  var CDLAB = {
+    en: { over: 'over time', run: 'building',    paused: 'paused',  idle: 'build time' },
+    pt: { over: 'estourou',  run: 'construindo', paused: 'pausado', idle: 'tempo de build' }
+  };
+  var NONOTES = {
+    en: '<p class="dim">No notes for this slide.</p>',
+    pt: '<p class="dim">Sem notas para este slide.</p>'
+  };
+
+  function paintTheme() {
+    root.setAttribute('data-theme', theme);
+    var el = document.getElementById('themetog');
+    if (el) el.textContent = theme === 'light' ? 'LIGHT' : 'DARK';
+  }
+  function paintLang() {
+    root.setAttribute('data-lang', lang);
+    root.setAttribute('lang', lang === 'pt' ? 'pt-BR' : 'en');
+    var el = document.getElementById('langtog');
+    if (el) el.textContent = lang.toUpperCase();
+  }
+  function toggleTheme() {
+    theme = theme === 'dark' ? 'light' : 'dark';
+    save('ufsc.theme', theme);
+    paintTheme();
+  }
+  function toggleLang() {
+    lang = lang === 'en' ? 'pt' : 'en';
+    save('ufsc.lang', lang);
+    paintLang();
+    paintCd();        // the countdown label is not markup
+    buildOverview();
+  }
 
   /* ---------- syntax highlighting ---------- */
   var RULES = [
@@ -913,7 +1061,7 @@ body.lean #lean{display:inline}
     blk.textContent = slides[i].getAttribute('data-block') || '';
     prog.style.height = ((i + 1) / slides.length * 100) + '%';
     var tpl = slides[i].querySelector('template.note');
-    notesBody.innerHTML = tpl ? tpl.innerHTML : '<p class="dim">No notes for this slide.</p>';
+    notesBody.innerHTML = tpl ? tpl.innerHTML : NONOTES[lang];
     if (location.hash !== '#' + (i + 1)) history.replaceState(null, '', '#' + (i + 1));
     slides[i].scrollTop = 0;
     paintCd();
@@ -977,10 +1125,10 @@ body.lean #lean{display:inline}
 
     var lab = slides[i].querySelector('.cd-lab');
     if (lab) {
-      lab.textContent = over ? 'over time'
-        : st.running ? 'building'
-        : left < st.full ? 'paused'
-        : 'build time';
+      lab.textContent = over ? CDLAB[lang].over
+        : st.running ? CDLAB[lang].run
+        : left < st.full ? CDLAB[lang].paused
+        : CDLAB[lang].idle;
     }
   }
 
@@ -1033,6 +1181,8 @@ body.lean #lean{display:inline}
       document.body.classList.toggle('lean', lean);
       buildOverview(); tick();
     }
+    else if (k === 'd' || k === 'D') { toggleTheme(); }
+    else if (k === 'p' || k === 'P') { toggleLang(); }
     else if (k === 'r' || k === 'R') { t0 = null; paused = 0; pausedAt = null; tick(); }
     else if (k === 'f' || k === 'F') {
       if (document.fullscreenElement) document.exitFullscreen();
@@ -1067,6 +1217,8 @@ body.lean #lean{display:inline}
     document.body.classList.toggle('notesopen', on);
   });
 
+  bind(document.getElementById('themetog'), toggleTheme);
+  bind(document.getElementById('langtog'), toggleLang);
   bind(document.getElementById('clock'), toggleClock);
   bind(document.getElementById('clockreset'), function () {
     t0 = null; paused = 0; pausedAt = null; tick();
@@ -1074,12 +1226,15 @@ body.lean #lean{display:inline}
 
   document.addEventListener('click', function (e) {
     if (e.target.closest('.ov-card') || e.target.closest('a') || e.target.closest('.notes')) return;
-    if (e.target.closest('[data-cd], .cd-lab, .cd-reset, #clock, #clockreset, #notesbtn')) return;
+    if (e.target.closest('[data-cd], .cd-lab, .cd-reset, #clock, #clockreset, #notesbtn, #themetog, #langtog')) return;
     if (ov.classList.contains('on') || document.getElementById('help').classList.contains('on')) {
       closeAll(); return;
     }
     var d = e.clientX < window.innerWidth * 0.28 ? -1 : 1; show(i + d, d);
   });
+
+  paintTheme();
+  paintLang();
 
   var startAt = parseInt((location.hash || '').slice(1), 10);
   show(isNaN(startAt) ? 0 : startAt - 1);
