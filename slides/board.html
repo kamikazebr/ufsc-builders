@@ -29,6 +29,15 @@ h1{font-family:'Archivo',sans-serif;font-weight:800;letter-spacing:-.02em;
   text-transform:uppercase;color:var(--ink-3)}
 #status.live{color:var(--good)}
 #status.err{color:var(--warn)}
+#src{display:block;font-family:'IBM Plex Mono',monospace;font-size:clamp(10px,.8vw,13px);
+  color:var(--ink-3);text-decoration:none;letter-spacing:.04em;margin-top:6px}
+#src:hover{color:var(--accent);text-decoration:underline}
+#src::after{content:' · verified source';color:var(--ink-3);letter-spacing:.12em}
+body.localchain #src{display:none}
+#change{position:absolute;top:14px;right:14px;background:none;border:1px solid var(--line);
+  color:var(--ink-3);border-radius:6px;padding:4px 10px;cursor:pointer;
+  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em}
+#change:hover{color:var(--accent);border-color:var(--accent)}
 #local{display:none;font-family:'IBM Plex Mono',monospace;font-size:clamp(10px,.78vw,12px);
   letter-spacing:.12em;text-transform:uppercase;color:var(--warn);
   border:1px solid var(--warn);border-radius:999px;padding:5px 12px}
@@ -94,8 +103,10 @@ li.fresh{border-color:var(--good);background:rgba(87,201,154,.09)}
 <header>
   <h1>UFSCBuilders</h1>
   <div class="count"><span id="n">0</span><small>BUILDERS ON THE BOARD</small></div>
+  <a id="src" href="#" target="_blank" rel="noopener" title="fonte verificada no Etherscan"></a>
   <span id="local">local chain — explorer links off</span>
   <div id="status">connecting</div>
+  <button id="change" type="button" title="apontar para outro contrato">change</button>
 </header>
 <ul id="list"><li class="empty">Waiting for the first registration…</li></ul>
 
@@ -112,6 +123,17 @@ li.fresh{border-color:var(--good);background:rgba(87,201,154,.09)}
   // the setup box overrides them and survives a reload.
   var DEF_ADDR = '0xaD08C29Aa13a01Ef33533398cf8bAA9eFEeAc360';
   var DEF_RPC  = 'https://ethereum-sepolia-rpc.publicnode.com';
+  // Stored config wins over the defaults, which is what you want when someone
+  // points the board at another contract - and a trap when the default changes
+  // under a browser that still remembers a local anvil run from last week. So
+  // stamp which default the stored values were saved against: a new default
+  // means the stored ones are stale, and they go.
+  if (localStorage.getItem('sr.def') !== DEF_ADDR) {
+    localStorage.removeItem('sr.addr');
+    localStorage.removeItem('sr.rpc');
+    localStorage.removeItem('sr.exp');
+    localStorage.setItem('sr.def', DEF_ADDR);
+  }
   var CFG = { addr: localStorage.getItem('sr.addr') || DEF_ADDR, rpc: localStorage.getItem('sr.rpc') || DEF_RPC, exp: localStorage.getItem('sr.exp') || 'https://sepolia.etherscan.io' };
   var known = {};
   var first = true;
@@ -122,10 +144,19 @@ li.fresh{border-color:var(--good);background:rgba(87,201,154,.09)}
     // you to a stranger's transaction history. Don't.
     var isLocal = /localhost|127\.0\.0\.1|0\.0\.0\.0/.test(CFG.rpc);
     document.body.classList.toggle('localchain', isLocal);
+    // Verified source, one click away. Worth showing right after the Etherscan
+    // key slide: the key is what made this tab exist.
+    var src = document.getElementById('src');
+    src.href = CFG.exp + '/address/' + CFG.addr + '#code';
+    src.textContent = CFG.addr;
     setup.style.display = 'none';
     poll();
     setInterval(poll, 5000);
   }
+
+  document.getElementById('change').addEventListener('click', function () {
+    setup.style.display = '';
+  });
 
   document.getElementById('go').addEventListener('click', function () {
     var a = document.getElementById('addr').value.trim();
@@ -135,6 +166,7 @@ li.fresh{border-color:var(--good);background:rgba(87,201,154,.09)}
     CFG.exp = document.getElementById('exp').value.trim().replace(/\/$/, '');
     localStorage.setItem('sr.addr', a); localStorage.setItem('sr.rpc', r);
     localStorage.setItem('sr.exp', CFG.exp);
+    localStorage.setItem('sr.def', DEF_ADDR);
     start();
   });
 
