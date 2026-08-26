@@ -23,6 +23,16 @@ starting point for a hackathon than a solved problem with nine implementations.
 
 ## What has already been built
 
+**[speedrunethereum.com/build-prompts](https://speedrunethereum.com/build-prompts)** — the
+same site, the other direction: about thirteen finished specifications written to be
+pasted into an agent. Bonding curves, vesting, a token-weighted DAO, a multisig, payment
+splitting, commit-reveal, quadratic funding, on-chain SVG.
+
+Two honest warnings. They target Scaffold-ETH 2, not this repo — the contracts transfer,
+the scaffolding does not. And a prompt someone else wrote gets you a working thing without
+teaching you why it works; read the contract it produces before you demo it, because the
+judges will ask.
+
 **[speedrunethereum.com/builds](https://speedrunethereum.com/builds)** — public,
 no login. Filter by category: DeFi, Gaming, NFTs, Social, DAOs & Governance, Dev
 Tooling, Identity & Reputation, RWA & Supply Chain, AI Agents, Prediction Markets.

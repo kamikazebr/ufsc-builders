@@ -46,6 +46,7 @@ different question. Full descriptions in [docs/ideas.md](../../../docs/ideas.md)
 | --- | --- |
 | [eips.ethereum.org/all#last-call](https://eips.ethereum.org/all#last-call) | Standards 14 days from Final. Nearly nothing implements them yet, so a first implementation is a real contribution — and the spec writes half your scope for you. |
 | [ethereum-magicians.org](https://ethereum-magicians.org) | Arguments about standards that do not exist yet. An open thread with no agreement is an unsolved problem someone competent already cares about. |
+| [speedrunethereum.com/build-prompts](https://speedrunethereum.com/build-prompts) | ~13 ready-made specs written for an agent. Good for shaping scope even if you build it yourself: read one to see how tight a 48-hour spec has to be. |
 | [speedrunethereum.com/builds](https://speedrunethereum.com/builds) | What has already been built, by category. Use it twice: to avoid rebuilding something that exists, and to calibrate size — weekend projects are smaller than you think. |
 
 If the idea itself is the blocker, run the BMAD brainstorming workflow

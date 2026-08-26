@@ -27,6 +27,7 @@ Slow for a room of thirty. Fine for one person on a Saturday.
 | --- | --- |
 | [eips.ethereum.org/all#last-call](https://eips.ethereum.org/all#last-call) | The 14-day window before a proposal is Final. Short list, high signal. |
 | [ethereum-magicians.org](https://ethereum-magicians.org) | Where standards get argued *before* they exist. An open thread is an unsolved problem. |
+| [speedrunethereum.com/build-prompts](https://speedrunethereum.com/build-prompts) | ~13 specs prontas pra colar num agente — bonding curve, vesting, DAO, multisig, quadratic funding, NFT em SVG. É o /builds do outro lado: em vez de ver o que fizeram, tu recebe o enunciado. |
 | [speedrunethereum.com/builds](https://speedrunethereum.com/builds) | What people already built, filterable by category. |
 | [speedrunethereum.com](https://speedrunethereum.com) | BuidlGuidl's challenges. Challenge 0 is this ground, done properly with a frontend. |
 
